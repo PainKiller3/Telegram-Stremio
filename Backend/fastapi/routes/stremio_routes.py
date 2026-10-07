@@ -447,16 +447,16 @@ async def get_manifest(token: str, token_data: dict = Depends(verify_token)):
                         "type": "movie",
                         "id": f"custom_{catalog_id}",
                         "name": catalog_name,
-                        "extra": [{"name": "skip"}],
-                        "extraSupported": ["skip"],
+                        "extra": [{"name": "search", "isRequired": False}, {"name": "skip"}],
+                        "extraSupported": ["search", "skip"],
                     })
                 if has_series:
                     catalogs.append({
                         "type": "series",
                         "id": f"custom_{catalog_id}",
                         "name": catalog_name,
-                        "extra": [{"name": "skip"}],
-                        "extraSupported": ["skip"],
+                        "extra": [{"name": "search", "isRequired": False}, {"name": "skip"}],
+                        "extraSupported": ["search", "skip"],
                     })
         except Exception:
             pass
@@ -853,9 +853,20 @@ async def get_catalog(token: str, media_type: str, id: str, extra: Optional[str]
                 and _token_can_view(*_effective_visibility(catalog, it), token_data)
             ]
             visible_items.sort(key=lambda it: it.get("updated_on") or it.get("added_at") or datetime.min, reverse=True)
-            start = (page - 1) * PAGE_SIZE
-            items = await db.get_documents(visible_items[start:start + PAGE_SIZE])
+            items = await db.get_documents(visible_items)
             items = [it for it in items if _token_can_view(it.get("visibility") or "public", it.get("allowed_tokens") or [], token_data)]
+
+            if search_query:
+                q = search_query.lower()
+                items = [
+                    it for it in items
+                    if q in (it.get("title") or "").lower()
+                    or q in (it.get("name") or "").lower()
+                    or q in (it.get("original_title") or "").lower()
+                ]
+
+            start = (page - 1) * PAGE_SIZE
+            items = items[start:start + PAGE_SIZE]
         elif search_query:
             search_results = await db.search_documents(
                 query=search_query, page=page, page_size=PAGE_SIZE,
