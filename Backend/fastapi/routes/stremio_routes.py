@@ -547,23 +547,28 @@ async def build_nuvio_collection_data(token: str) -> list:
     except Exception:
         pass
 
-    # Default fallback catalog IDs if matching fails
+    # Helper to get catalog ID for movies and series
     def get_cat_id(name_query, fallback="latest_movies"):
         for name, cid in catalog_map.items():
             if name_query.lower() in name:
                 return cid
         return fallback
 
-    hotstar_id = get_cat_id("hotstar")
-    netflix_id = get_cat_id("netflix")
-    prime_id = get_cat_id("prime")
-    apple_id = get_cat_id("apple")
-    hbo_id = get_cat_id("hbo")
-    hulu_id = get_cat_id("hulu")
-    mx_id = get_cat_id("mx")
-    sony_id = get_cat_id("sony")
-    zee5_id = get_cat_id("zee")
-    bollywood_id = get_cat_id("bollywood")
+    hotstar_movie = get_cat_id("hotstar", "latest_movies")
+    hotstar_series = get_cat_id("hotstar", "latest_series")
+    netflix_movie = get_cat_id("netflix", "latest_movies")
+    netflix_series = get_cat_id("netflix", "latest_series")
+    prime_movie = get_cat_id("prime", "latest_movies")
+    prime_series = get_cat_id("prime", "latest_series")
+    apple_movie = get_cat_id("apple", "latest_movies")
+    hbo_movie = get_cat_id("hbo", "latest_movies")
+    hulu_movie = get_cat_id("hulu", "latest_movies")
+    hulu_series = get_cat_id("hulu", "latest_series")
+    mx_movie = get_cat_id("mx", "latest_movies")
+    sony_movie = get_cat_id("sony", "latest_movies")
+    zee5_movie = get_cat_id("zee", "latest_movies")
+    bollywood_movie = get_cat_id("bollywood", "latest_movies")
+    bollywood_series = get_cat_id("bollywood", "latest_series")
 
     return [
       {
@@ -574,8 +579,8 @@ async def build_nuvio_collection_data(token: str) -> list:
             "id": "folder-8ZBZOMW9",
             "title": "JioHotstar",
             "sources": [
-              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": hotstar_id},
-              {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": hotstar_id}
+              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": hotstar_movie},
+              {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": hotstar_series}
             ],
             "hideTitle": False,
             "tileShape": "LANDSCAPE",
@@ -583,8 +588,8 @@ async def build_nuvio_collection_data(token: str) -> list:
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/disney-plus.webp",
             "coverImageUrl": "https://files.catbox.moe/miit0l.jpg",
             "catalogSources": [
-              {"type": "movie", "addonId": addon_id, "catalogId": hotstar_id},
-              {"type": "series", "addonId": addon_id, "catalogId": hotstar_id}
+              {"type": "movie", "addonId": addon_id, "catalogId": hotstar_movie},
+              {"type": "series", "addonId": addon_id, "catalogId": hotstar_series}
             ],
             "focusGifEnabled": True,
             "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/disney-plus.webp"
@@ -593,8 +598,8 @@ async def build_nuvio_collection_data(token: str) -> list:
             "id": "folder-WFGY1XPD",
             "title": "Netflix",
             "sources": [
-              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": netflix_id},
-              {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": netflix_id}
+              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": netflix_movie},
+              {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": netflix_series}
             ],
             "hideTitle": False,
             "tileShape": "LANDSCAPE",
@@ -602,8 +607,8 @@ async def build_nuvio_collection_data(token: str) -> list:
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/netflix.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/cover/netflix.webp",
             "catalogSources": [
-              {"type": "movie", "addonId": addon_id, "catalogId": netflix_id},
-              {"type": "series", "addonId": addon_id, "catalogId": netflix_id}
+              {"type": "movie", "addonId": addon_id, "catalogId": netflix_movie},
+              {"type": "series", "addonId": addon_id, "catalogId": netflix_series}
             ],
             "focusGifEnabled": True,
             "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/netflix.webp"
@@ -612,8 +617,8 @@ async def build_nuvio_collection_data(token: str) -> list:
             "id": "folder-AT8KYHZO",
             "title": "Prime Video",
             "sources": [
-              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": prime_id},
-              {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": prime_id}
+              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": prime_movie},
+              {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": prime_series}
             ],
             "hideTitle": False,
             "tileShape": "LANDSCAPE",
@@ -621,8 +626,8 @@ async def build_nuvio_collection_data(token: str) -> list:
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/prime-video.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/cover/prime-video.webp",
             "catalogSources": [
-              {"type": "movie", "addonId": addon_id, "catalogId": prime_id},
-              {"type": "series", "addonId": addon_id, "catalogId": prime_id}
+              {"type": "movie", "addonId": addon_id, "catalogId": prime_movie},
+              {"type": "series", "addonId": addon_id, "catalogId": prime_series}
             ],
             "focusGifEnabled": True,
             "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/prime-video.webp"
@@ -631,7 +636,7 @@ async def build_nuvio_collection_data(token: str) -> list:
             "id": "folder-IQTF27K8",
             "title": "Apple TV",
             "sources": [
-              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": apple_id}
+              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": apple_movie}
             ],
             "hideTitle": False,
             "tileShape": "LANDSCAPE",
@@ -639,7 +644,7 @@ async def build_nuvio_collection_data(token: str) -> list:
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/apple-tv.webp",
             "coverImageUrl": "https://imkaptain.github.io/nuvio-assets/assets/images/4d8f0a8f.webp",
             "catalogSources": [
-              {"type": "movie", "addonId": addon_id, "catalogId": apple_id}
+              {"type": "movie", "addonId": addon_id, "catalogId": apple_movie}
             ],
             "focusGifEnabled": True,
             "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/apple-tv.webp"
@@ -648,7 +653,7 @@ async def build_nuvio_collection_data(token: str) -> list:
             "id": "folder-OA4T8NYO",
             "title": "HBO Max",
             "sources": [
-              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": hbo_id}
+              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": hbo_movie}
             ],
             "hideTitle": False,
             "tileShape": "LANDSCAPE",
@@ -656,7 +661,7 @@ async def build_nuvio_collection_data(token: str) -> list:
             "titleLogoUrl": "https://imkaptain.github.io/nuvio-assets/assets/images/6e4c10d3.webp",
             "coverImageUrl": "https://imkaptain.github.io/nuvio-assets/assets/images/b59babf1.webp",
             "catalogSources": [
-              {"type": "movie", "addonId": addon_id, "catalogId": hbo_id}
+              {"type": "movie", "addonId": addon_id, "catalogId": hbo_movie}
             ],
             "focusGifEnabled": True,
             "heroBackdropUrl": "https://raw.githubusercontent.com/bramst0ne/prism-wallpapers/main/collections/providers/1899-hbo-max/backdrops/t2_flat_1080p.jpg"
@@ -665,8 +670,8 @@ async def build_nuvio_collection_data(token: str) -> list:
             "id": "folder-LN9SPMQN",
             "title": "Hulu",
             "sources": [
-              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": hulu_id},
-              {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": hulu_id}
+              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": hulu_movie},
+              {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": hulu_series}
             ],
             "hideTitle": False,
             "tileShape": "LANDSCAPE",
@@ -674,8 +679,8 @@ async def build_nuvio_collection_data(token: str) -> list:
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/hulu.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/cover/hulu.webp",
             "catalogSources": [
-              {"type": "movie", "addonId": addon_id, "catalogId": hulu_id},
-              {"type": "series", "addonId": addon_id, "catalogId": hulu_id}
+              {"type": "movie", "addonId": addon_id, "catalogId": hulu_movie},
+              {"type": "series", "addonId": addon_id, "catalogId": hulu_series}
             ],
             "focusGifEnabled": True,
             "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/hulu.webp"
@@ -684,14 +689,14 @@ async def build_nuvio_collection_data(token: str) -> list:
             "id": "85a10640-79f2-435f-9d63-348e921e37f4",
             "title": "MX Player",
             "sources": [
-              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": mx_id}
+              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": mx_movie}
             ],
             "hideTitle": False,
             "tileShape": "landscape",
             "focusGifUrl": "https://cdn.dribbble.com/userupload/35341158/file/original-4a4c6bc62f2b6f688838c03d48b6ff14.gif",
             "coverImageUrl": "https://files.catbox.moe/ao7q5g.jpg",
             "catalogSources": [
-              {"type": "movie", "addonId": addon_id, "catalogId": mx_id}
+              {"type": "movie", "addonId": addon_id, "catalogId": mx_movie}
             ],
             "focusGifEnabled": True
           },
@@ -699,13 +704,13 @@ async def build_nuvio_collection_data(token: str) -> list:
             "id": "f6409d11-7630-4fa4-b6e6-48774e4df89e",
             "title": "Sony LIV",
             "sources": [
-              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": sony_id}
+              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": sony_movie}
             ],
             "hideTitle": False,
             "tileShape": "landscape",
             "coverImageUrl": "https://files.catbox.moe/zi4q1u.jpg",
             "catalogSources": [
-              {"type": "movie", "addonId": addon_id, "catalogId": sony_id}
+              {"type": "movie", "addonId": addon_id, "catalogId": sony_movie}
             ],
             "focusGifEnabled": True
           },
@@ -713,13 +718,13 @@ async def build_nuvio_collection_data(token: str) -> list:
             "id": "008c0c7c-cfe1-43f4-9630-8afd72b7cb5f",
             "title": "Zee5",
             "sources": [
-              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": zee5_id}
+              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": zee5_movie}
             ],
             "hideTitle": False,
             "tileShape": "landscape",
             "coverImageUrl": "https://files.catbox.moe/uboapw.jpg",
             "catalogSources": [
-              {"type": "movie", "addonId": addon_id, "catalogId": zee5_id}
+              {"type": "movie", "addonId": addon_id, "catalogId": zee5_movie}
             ],
             "focusGifEnabled": True
           },
@@ -756,15 +761,15 @@ async def build_nuvio_collection_data(token: str) -> list:
             "id": "f2e9b8dc-f50a-4bc7-96d3-30053ce27ad6",
             "title": "Bollywood 🇮🇳",
             "sources": [
-              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": bollywood_id},
-              {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": bollywood_id}
+              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": bollywood_movie},
+              {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": bollywood_series}
             ],
             "hideTitle": False,
             "tileShape": "landscape",
             "coverImageUrl": "https://files.catbox.moe/hp875t.jpg",
             "catalogSources": [
-              {"type": "movie", "addonId": addon_id, "catalogId": bollywood_id},
-              {"type": "series", "addonId": addon_id, "catalogId": bollywood_id}
+              {"type": "movie", "addonId": addon_id, "catalogId": bollywood_movie},
+              {"type": "series", "addonId": addon_id, "catalogId": bollywood_series}
             ],
             "focusGifEnabled": True
           },
