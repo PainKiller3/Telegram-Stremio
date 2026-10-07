@@ -28,19 +28,41 @@ async def send_start_message(client: Client, message: Message):
             user_name = (message.from_user.first_name or message.from_user.username or f"User {user_id}") if message.from_user else f"Chat {user_id}"
             try:
                 token_doc = await db.add_api_token(name=user_name, user_id=user_id)
-                addon_url = f"{base_url}/stremio/{token_doc.get('token')}/manifest.json"
+                token_token = token_doc.get('token') if isinstance(token_doc, dict) else None
+                addon_url = f"{base_url}/stremio/{token_token}/manifest.json" if token_token else f"{base_url}/stremio/manifest.json"
+                nuvio_url = f"{base_url}/stremio/{token_token}/nuvio-collection.json" if token_token else f"{base_url}/stremio/nuvio-collection.json"
             except Exception as e:
                 LOGGER.error(f"Error ensuring token for free user: {e}")
+                nuvio_url = f"{base_url}/stremio/nuvio-collection.json"
 
             await message.reply_text(
                 '🎉 <b>Welcome to the Telegram Stremio Media Server!</b>\n\n'
-                'Here is your personal Stremio Addon link:\n\n'
-                '🎬 <b>Stremio Addon — Install Link:</b>\n'
+                'Here are your personal links:\n\n'
+                '🧩 <b>Addon Manifest URL (Stremio & Nuvio):</b>\n'
                 f'<code>{addon_url}</code>\n\n'
-                'Tap the link above → <b>Install</b> in Stremio to start watching!',
+                '📱 <b>Nuvio Collection URL (Optional):</b>\n'
+                f'<code>{nuvio_url}</code>\n\n'
+                '• Add the <b>Addon Manifest URL</b> into Stremio or Nuvio under Addons.\n'
+                '• Use the <b>Nuvio Collection URL/File</b> if you want logo catalog buttons on Nuvio home screen!',
                 quote=True,
                 parse_mode=enums.ParseMode.HTML
             )
+
+            if token_token:
+                try:
+                    import io, json
+                    from Backend.fastapi.routes.stremio_routes import build_nuvio_collection_data
+                    col_data = await build_nuvio_collection_data(token_token)
+                    json_bytes = json.dumps(col_data, indent=2).encode("utf-8")
+                    file_obj = io.BytesIO(json_bytes)
+                    file_obj.name = "nuvio_collection.json"
+                    await client.send_document(
+                        chat_id=message.chat.id,
+                        document=file_obj,
+                        caption="📱 <b>Nuvio Collection File</b>\n\nDownload this file and import directly into Nuvio!"
+                    )
+                except Exception as e:
+                    LOGGER.error(f"Error sending Nuvio collection file in free start: {e}")
             return
 
         #----- Subscription mode: verify active subscription, else offer plans
@@ -86,16 +108,38 @@ async def send_start_message(client: Client, message: Message):
         token_doc = await db.ensure_api_token_for_user(user_id, user_name)
         if token_doc and token_doc.get("token"):
             addon_url = f"{base_url}/stremio/{token_doc['token']}/manifest.json"
+            nuvio_url = f"{base_url}/stremio/{token_doc['token']}/nuvio-collection.json"
+        else:
+            nuvio_url = f"{base_url}/stremio/nuvio-collection.json"
 
         await message.reply_text(
             '🎉 <b>Welcome back to the Telegram Stremio Subscription Manager!</b>\n\n'
-            'Your subscription is active. Here is your personal addon link:\n\n'
-            '🎬 <b>Stremio Addon — Install Link:</b>\n'
+            'Your subscription is active. Here are your personal links:\n\n'
+            '🧩 <b>Addon Manifest URL (Stremio & Nuvio):</b>\n'
             f'<code>{addon_url}</code>\n\n'
-            'Tap the link above → <b>Install</b> in Stremio to start watching!',
+            '📱 <b>Nuvio Collection URL (Optional):</b>\n'
+            f'<code>{nuvio_url}</code>\n\n'
+            '• Add the <b>Addon Manifest URL</b> into Stremio or Nuvio under Addons.\n'
+            '• Use the <b>Nuvio Collection URL/File</b> if you want logo catalog buttons on Nuvio home screen!',
             quote=True,
             parse_mode=enums.ParseMode.HTML
         )
+
+        if token_doc and token_doc.get("token"):
+            try:
+                import io, json
+                from Backend.fastapi.routes.stremio_routes import build_nuvio_collection_data
+                col_data = await build_nuvio_collection_data(token_doc.get("token"))
+                json_bytes = json.dumps(col_data, indent=2).encode("utf-8")
+                file_obj = io.BytesIO(json_bytes)
+                file_obj.name = "nuvio_collection.json"
+                await client.send_document(
+                    chat_id=message.chat.id,
+                    document=file_obj,
+                    caption="📱 <b>Nuvio Collection File</b>\n\nDownload this file and import directly into Nuvio!"
+                )
+            except Exception as e:
+                LOGGER.error(f"Error sending Nuvio collection file in start: {e}")
 
     except Exception as e:
         await message.reply_text(f"⚠️ Error: {e}")

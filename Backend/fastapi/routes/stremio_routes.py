@@ -533,9 +533,7 @@ async def get_manifest(token: str, token_data: dict = Depends(verify_token)):
     }
 
 
-#----- Dynamic Nuvio Collection JSON for this token
-@router.get("/{token}/nuvio-collection.json")
-async def get_nuvio_collection(token: str, token_data: dict = Depends(verify_token)):
+async def build_nuvio_collection_data(token: str) -> list:
     addon_id = f"telegram.media.{token[:8]}"
     
     # Map catalog names to catalog IDs for this token
@@ -567,7 +565,7 @@ async def get_nuvio_collection(token: str, token_data: dict = Depends(verify_tok
     zee5_id = get_cat_id("zee")
     bollywood_id = get_cat_id("bollywood")
 
-    collection = [
+    return [
       {
         "id": "collection-erfs5gwk-community",
         "title": "Streaming Services",
@@ -804,7 +802,12 @@ async def get_nuvio_collection(token: str, token_data: dict = Depends(verify_tok
         "focusGlowEnabled": True
       }
     ]
-    return collection
+
+
+#----- Dynamic Nuvio Collection JSON for this token
+@router.get("/{token}/nuvio-collection.json")
+async def get_nuvio_collection(token: str, token_data: dict = Depends(verify_token)):
+    return await build_nuvio_collection_data(token)
 
 
 #----- Catalog listing (latest/popular/custom, with genre/search/skip)

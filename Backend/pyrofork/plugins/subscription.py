@@ -239,8 +239,10 @@ async def admin_review(client: Client, callback_query: CallbackQuery):
             token_doc = await db.add_api_token(name=user_name, user_id=target_user_id)
             await db.align_token_with_subscription(target_user_id)
             addon_url = f"{SettingsManager.current().base_url}/stremio/{token_doc.get('token')}/manifest.json"
+            nuvio_url = f"{SettingsManager.current().base_url}/stremio/{token_doc.get('token')}/nuvio-collection.json"
         except Exception:
             addon_url = None
+            nuvio_url = None
 
         try:
             invite_link = await client.create_chat_invite_link(
@@ -260,11 +262,30 @@ async def admin_review(client: Client, callback_query: CallbackQuery):
         )
         if addon_url:
             success_text += (
-                f"\n\n🎬 <b>Stremio Addon — Install Link:</b>\n"
+                f"\n\n🧩 <b>Addon Manifest URL (Stremio & Nuvio):</b>\n"
                 f"<code>{addon_url}</code>\n\n"
-                f"Tap the link above → <b>Install</b> in Stremio to start watching!"
+                f"📱 <b>Nuvio Collection URL (Optional):</b>\n"
+                f"<code>{nuvio_url}</code>\n\n"
+                f"• Add the <b>Addon Manifest URL</b> into Stremio or Nuvio under Addons.\n"
+                f"• Use the <b>Nuvio Collection URL/File</b> if you want logo catalog buttons on Nuvio home screen!"
             )
         await client.send_message(target_user_id, success_text)
+
+        if token_doc and token_doc.get("token"):
+            try:
+                import io, json
+                from Backend.fastapi.routes.stremio_routes import build_nuvio_collection_data
+                col_data = await build_nuvio_collection_data(token_doc.get("token"))
+                json_bytes = json.dumps(col_data, indent=2).encode("utf-8")
+                file_obj = io.BytesIO(json_bytes)
+                file_obj.name = "nuvio_collection.json"
+                await client.send_document(
+                    chat_id=target_user_id,
+                    document=file_obj,
+                    caption="📱 <b>Nuvio Collection File</b>\n\nDownload this file and import directly into Nuvio!"
+                )
+            except Exception as e:
+                LOGGER.error(f"Error sending Nuvio collection file: {e}")
 
         mention, username_str = await _resolve_target_info(client, target_user_id)
         info_text = _plan_info_text(mention, username_str, target_user_id, duration, price)
