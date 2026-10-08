@@ -552,34 +552,34 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full")
         pass
 
     # Helper to get catalog ID for movies and series
-    def get_cat_id(name_query: str, auto_key: str = "", fallback: str = "latest_movies"):
+    def get_cat_id(name_query: str, auto_key: str = "", fallback: str = "latest_movies", strict: bool = False):
         for name, cid in catalog_map.items():
             if name_query.lower() in name:
                 return cid
         if auto_key and auto_key.lower() in auto_key_map:
             return auto_key_map[auto_key.lower()]
-        return auto_key or fallback
+        return None if strict else fallback
 
-    hotstar_movie = get_cat_id("hotstar", "auto_hotstar", "latest_movies")
-    hotstar_series = get_cat_id("hotstar", "auto_hotstar", "latest_series")
-    netflix_movie = get_cat_id("netflix", "auto_netflix", "latest_movies")
-    netflix_series = get_cat_id("netflix", "auto_netflix", "latest_series")
-    prime_movie = get_cat_id("prime", "auto_prime_video", "latest_movies")
-    prime_series = get_cat_id("prime", "auto_prime_video", "latest_series")
-    apple_movie = get_cat_id("apple", "auto_apple_tv", "latest_movies")
-    apple_series = get_cat_id("apple", "auto_apple_tv", "latest_series")
-    hbo_movie = get_cat_id("hbo", "auto_hbo", "latest_movies")
-    hbo_series = get_cat_id("hbo", "auto_hbo", "latest_series")
-    hulu_movie = get_cat_id("hulu", "auto_hulu", "latest_movies")
-    hulu_series = get_cat_id("hulu", "auto_hulu", "latest_series")
-    mx_movie = get_cat_id("mx", "auto_mx_player", "latest_movies")
-    mx_series = get_cat_id("mx", "auto_mx_player", "latest_series")
-    sony_movie = get_cat_id("sony", "auto_sonyliv", "latest_movies")
-    sony_series = get_cat_id("sony", "auto_sonyliv", "latest_series")
-    zee5_movie = get_cat_id("zee", "auto_zee5", "latest_movies")
-    zee5_series = get_cat_id("zee", "auto_zee5", "latest_series")
-    crunchyroll_movie = get_cat_id("crunchyroll", "auto_crunchyroll", "latest_movies")
-    crunchyroll_series = get_cat_id("crunchyroll", "auto_crunchyroll", "latest_series")
+    hotstar_movie = get_cat_id("hotstar", "auto_hotstar", strict=True)
+    hotstar_series = get_cat_id("hotstar", "auto_hotstar", strict=True)
+    netflix_movie = get_cat_id("netflix", "auto_netflix", strict=True)
+    netflix_series = get_cat_id("netflix", "auto_netflix", strict=True)
+    prime_movie = get_cat_id("prime", "auto_prime_video", strict=True)
+    prime_series = get_cat_id("prime", "auto_prime_video", strict=True)
+    apple_movie = get_cat_id("apple", "auto_apple_tv", strict=True)
+    apple_series = get_cat_id("apple", "auto_apple_tv", strict=True)
+    hbo_movie = get_cat_id("hbo", "auto_hbo", strict=True)
+    hbo_series = get_cat_id("hbo", "auto_hbo", strict=True)
+    hulu_movie = get_cat_id("hulu", "auto_hulu", strict=True)
+    hulu_series = get_cat_id("hulu", "auto_hulu", strict=True)
+    mx_movie = get_cat_id("mx", "auto_mx_player", strict=True)
+    mx_series = get_cat_id("mx", "auto_mx_player", strict=True)
+    sony_movie = get_cat_id("sony", "auto_sonyliv", strict=True)
+    sony_series = get_cat_id("sony", "auto_sonyliv", strict=True)
+    zee5_movie = get_cat_id("zee", "auto_zee5", strict=True)
+    zee5_series = get_cat_id("zee", "auto_zee5", strict=True)
+    crunchyroll_movie = get_cat_id("crunchyroll", "auto_crunchyroll", strict=True)
+    crunchyroll_series = get_cat_id("crunchyroll", "auto_crunchyroll", strict=True)
     bollywood_movie = get_cat_id("bollywood", "auto_bollywood", "latest_movies")
     bollywood_series = get_cat_id("bollywood", "auto_bollywood", "latest_series")
 
@@ -798,6 +798,18 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full")
         "showAllTab": True,
         "focusGlowEnabled": True
     }
+
+    # Auto-hide OTT folders whose catalogs are not enabled/synced in database
+    cleaned_folders = []
+    for f in ott_collection.get("folders") or []:
+        sources = [s for s in f.get("sources") or [] if s.get("catalogId")]
+        catalog_sources = [cs for cs in f.get("catalogSources") or [] if cs.get("catalogId")]
+        if sources or f.get("id") == "68ba6673-3480-4601-980e-4f69862777c3":  # Keep Trending Now
+            folder_copy = dict(f)
+            folder_copy["sources"] = sources or f.get("sources")
+            folder_copy["catalogSources"] = catalog_sources or f.get("catalogSources")
+            cleaned_folders.append(folder_copy)
+    ott_collection["folders"] = cleaned_folders
 
     explore_collection = {
         "id": "966190a9-3785-4ef0-9f1b-883478bf618c-community",
