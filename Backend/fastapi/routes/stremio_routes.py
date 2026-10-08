@@ -589,6 +589,46 @@ async def build_nuvio_collection_data(token: str) -> list:
         "title": "Streaming Services",
         "folders": [
           {
+            "id": "68ba6673-3480-4601-980e-4f69862777c3",
+            "title": "Trending Now",
+            "sources": [
+              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": "latest_movies"},
+              {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": "latest_series"},
+              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": "top_movies"},
+              {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": "top_series"}
+            ],
+            "hideTitle": False,
+            "tileShape": "square",
+            "focusGifUrl": "https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUydnAzNGpkNTljNG9iOXR4dTE3cHA4djR3Y3ZoN3B5czQxaHlkYXk3cSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/SIkWDYx30MwcAkz0CQ/giphy.gif",
+            "coverImageUrl": "https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUydnAzNGpkNTljNG9iOXR4dTE3cHA4djR3Y3ZoN3B5czQxaHlkYXk3cSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/SIkWDYx30MwcAkz0CQ/giphy.gif",
+            "catalogSources": [
+              {"type": "movie", "addonId": addon_id, "catalogId": "latest_movies"},
+              {"type": "series", "addonId": addon_id, "catalogId": "latest_series"},
+              {"type": "movie", "addonId": addon_id, "catalogId": "top_movies"},
+              {"type": "series", "addonId": addon_id, "catalogId": "top_series"}
+            ],
+            "focusGifEnabled": True
+          },
+          {
+            "id": "cf7a3d79-0cc9-42c5-b460-d2e3b838ecfc",
+            "title": "Crunchyroll",
+            "sources": [
+              {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": crunchyroll_series},
+              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": crunchyroll_movie}
+            ],
+            "hideTitle": False,
+            "tileShape": "square",
+            "focusGifUrl": "https://i.postimg.cc/ZnVFRhFc/crunchyroll-Gif.gif",
+            "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/crunchyroll.webp",
+            "coverImageUrl": "https://i.postimg.cc/8PYMn4yW/Crunchyroll-Backdrop.webp",
+            "catalogSources": [
+              {"type": "series", "addonId": addon_id, "catalogId": crunchyroll_series},
+              {"type": "movie", "addonId": addon_id, "catalogId": crunchyroll_movie}
+            ],
+            "focusGifEnabled": True,
+            "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/crunchyroll.webp"
+          },
+          {
             "id": "folder-8ZBZOMW9",
             "title": "JioHotstar",
             "sources": [
@@ -596,7 +636,7 @@ async def build_nuvio_collection_data(token: str) -> list:
               {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": hotstar_series}
             ],
             "hideTitle": False,
-            "tileShape": "LANDSCAPE",
+            "tileShape": "landscape",
             "focusGifUrl": "https://www.image2url.com/r2/default/gifs/1788340139972-41f08d14-1898-4d4c-b0d9-c8922ffdf0c1.gif",
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/disney-plus.webp",
             "coverImageUrl": "https://files.catbox.moe/miit0l.jpg",
@@ -615,10 +655,10 @@ async def build_nuvio_collection_data(token: str) -> list:
               {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": netflix_series}
             ],
             "hideTitle": False,
-            "tileShape": "LANDSCAPE",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/focused/netflix.webp",
+            "tileShape": "landscape",
+            "focusGifUrl": "https://i.pinimg.com/originals/bb/74/04/bb74046420c4c992b8cabc6e667abe40.gif",
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/netflix.webp",
-            "coverImageUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/cover/netflix.webp",
+            "coverImageUrl": "https://i.pinimg.com/1200x/64/c0/94/64c094dfadb3a3e2ba7ad1b86afe04d8.jpg",
             "catalogSources": [
               {"type": "movie", "addonId": addon_id, "catalogId": netflix_movie},
               {"type": "series", "addonId": addon_id, "catalogId": netflix_series}
@@ -628,13 +668,13 @@ async def build_nuvio_collection_data(token: str) -> list:
           },
           {
             "id": "folder-AT8KYHZO",
-            "title": "Prime Video",
+            "title": "Amazon Prime Video",
             "sources": [
               {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": prime_movie},
               {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": prime_series}
             ],
             "hideTitle": False,
-            "tileShape": "LANDSCAPE",
+            "tileShape": "landscape",
             "focusGifUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/focused/prime-video.webp",
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/prime-video.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/cover/prime-video.webp",
@@ -653,7 +693,7 @@ async def build_nuvio_collection_data(token: str) -> list:
               {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": apple_series}
             ],
             "hideTitle": False,
-            "tileShape": "LANDSCAPE",
+            "tileShape": "landscape",
             "focusGifUrl": "https://64.media.tumblr.com/d717319220a7d26bdaa88e72f6f76889/d9a7a808f588d8f4-63/s500x750/959b0ca57f53153b2ca9adaf414859e45e3734e6.gifv",
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/apple-tv.webp",
             "coverImageUrl": "https://imkaptain.github.io/nuvio-assets/assets/images/4d8f0a8f.webp",
@@ -672,7 +712,7 @@ async def build_nuvio_collection_data(token: str) -> list:
               {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": hbo_series}
             ],
             "hideTitle": False,
-            "tileShape": "LANDSCAPE",
+            "tileShape": "landscape",
             "focusGifUrl": "https://64.media.tumblr.com/cca7a86d443a0bc88536a2ad6ce72aec/b495f88d5c1df470-a2/s640x960/4cb9b614191d17d02c946b4ca59548cd333c06fd.gifv",
             "titleLogoUrl": "https://imkaptain.github.io/nuvio-assets/assets/images/6e4c10d3.webp",
             "coverImageUrl": "https://imkaptain.github.io/nuvio-assets/assets/images/b59babf1.webp",
@@ -691,7 +731,7 @@ async def build_nuvio_collection_data(token: str) -> list:
               {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": hulu_series}
             ],
             "hideTitle": False,
-            "tileShape": "LANDSCAPE",
+            "tileShape": "landscape",
             "focusGifUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/focused/hulu.webp",
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/hulu.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/cover/hulu.webp",
@@ -728,7 +768,8 @@ async def build_nuvio_collection_data(token: str) -> list:
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "coverImageUrl": "https://files.catbox.moe/zi4q1u.jpg",
+            "focusGifUrl": "https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyNm9wamYzbjhpNGc5NzJyOG03a2J5ZjZ0bm41Znk2ZnowZ2R6YTZ2OSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/XAV5uY3DG25L4XDZC2/giphy.gif",
+            "coverImageUrl": "https://pngup.com/iwMx/AISelect_20260901_173153_Samsung%20Browser.jpg",
             "catalogSources": [
               {"type": "movie", "addonId": addon_id, "catalogId": sony_movie},
               {"type": "series", "addonId": addon_id, "catalogId": sony_series}
@@ -744,7 +785,8 @@ async def build_nuvio_collection_data(token: str) -> list:
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "coverImageUrl": "https://files.catbox.moe/uboapw.jpg",
+            "focusGifUrl": "https://www.image2url.com/r2/default/gifs/1776556708568-46cb2c2a-86ac-4dfd-b515-f4f4941f76b3.gif",
+            "coverImageUrl": "https://i.postimg.cc/9QCxx1G1/IMG-2454.jpg",
             "catalogSources": [
               {"type": "movie", "addonId": addon_id, "catalogId": zee5_movie},
               {"type": "series", "addonId": addon_id, "catalogId": zee5_series}
@@ -759,10 +801,10 @@ async def build_nuvio_collection_data(token: str) -> list:
               {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": crunchyroll_movie}
             ],
             "hideTitle": False,
-            "tileShape": "LANDSCAPE",
-            "focusGifUrl": "https://media1.giphy.com/media/v1.Y2lkPTZjMDliOTUyMXFuYjV2cGtwbzBtY2Vlb3Q1NXB1MHh6eTNyMWVmZmluNGNsMHYzZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/hQmEAq7dXE0E6SPSkA/giphy.gif",
+            "tileShape": "landscape",
+            "focusGifUrl": "https://i.postimg.cc/ZnVFRhFc/crunchyroll-Gif.gif",
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/crunchyroll.webp",
-            "coverImageUrl": "https://files.catbox.moe/cj0s7r.jpg",
+            "coverImageUrl": "https://i.postimg.cc/8PYMn4yW/Crunchyroll-Backdrop.webp",
             "catalogSources": [
               {"type": "series", "addonId": addon_id, "catalogId": crunchyroll_series},
               {"type": "movie", "addonId": addon_id, "catalogId": crunchyroll_movie}
@@ -778,18 +820,19 @@ async def build_nuvio_collection_data(token: str) -> list:
       },
       {
         "id": "966190a9-3785-4ef0-9f1b-883478bf618c-community",
-        "title": "Explore 🗺️",
+        "title": "Explore & Discover🗺️",
         "folders": [
           {
             "id": "f2e9b8dc-f50a-4bc7-96d3-30053ce27ad6",
-            "title": "Bollywood 🇮🇳",
+            "title": "India 🇮🇳",
             "sources": [
               {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": bollywood_movie},
               {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": bollywood_series}
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "coverImageUrl": "https://files.catbox.moe/hp875t.jpg",
+            "focusGifUrl": "https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUycDFtbGliOHdobmttbjRvZzZuODVjMnk4NHk2eHl0cW8zZG43a2M4cSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/zySGXB0I0me7fGQv3Y/giphy.gif",
+            "coverImageUrl": "https://img.ge/i/Z9JCe74.jpg",
             "catalogSources": [
               {"type": "movie", "addonId": addon_id, "catalogId": bollywood_movie},
               {"type": "series", "addonId": addon_id, "catalogId": bollywood_series}
@@ -797,31 +840,130 @@ async def build_nuvio_collection_data(token: str) -> list:
             "focusGifEnabled": True
           },
           {
-            "id": "cd74f767-b492-4a4c-a3a4-7296925e15a3",
-            "title": "Marvel Cinematic Universe",
+            "id": "c2206436-c704-4fca-a026-f4d426c40992",
+            "title": "Warner Bros. Pictures",
             "sources": [
-              {"type": None, "title": "Marvel Cinematic Universe - Movies (Release Order)", "sortBy": "rank", "provider": "trakt", "sortHow": "asc", "mediaType": "MOVIE", "traktListId": 22881797}
+              {"title": "Warner Bros.", "sortBy": "popularity.desc", "tmdbId": 174, "provider": "tmdb", "mediaType": "MOVIE", "tmdbSourceType": "COMPANY"}
             ],
             "hideTitle": False,
-            "tileShape": "LANDSCAPE",
-            "focusGifUrl": "https://media1.giphy.com/media/v1.Y2lkPTZjMDliOTUyenlqOGV5Zzc4cjAzazNscmJwcDc5Y3Y0NDBid3N3MXVjd3gwZnNmOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/10ADhj1QPawFna/giphy.gif",
-            "titleLogoUrl": "https://i.postimg.cc/XNHCLgb4/Marvel-Logo.png",
-            "coverImageUrl": "https://files.catbox.moe/1a751v.jpg",
-            "focusGifEnabled": False,
-            "heroBackdropUrl": "https://i.postimg.cc/v8qVhvsn/Marvel-BG.png"
+            "tileShape": "landscape",
+            "focusGifUrl": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYmpsd2tvcmR1ZzZpZ2cxYWRqcmhycWRqeXBlMWttNGNhZjZkaGp4ZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/WUaJwN6Rlsf9M47p8e/giphy.gif",
+            "coverImageUrl": "https://files.catbox.moe/ngl1qa.jpg",
+            "catalogSources": [],
+            "focusGifEnabled": True
           },
           {
-            "id": "72394705-9eaf-4d7d-8533-6b004f5287fe",
-            "title": "Star Wars",
+            "id": "folder-08ic2wbn",
+            "title": "Anime",
             "sources": [
-              {"type": None, "title": "Star Wars Movies", "sortBy": "released", "provider": "trakt", "sortHow": "asc", "mediaType": "MOVIE", "traktListId": 22202556}
+              {
+                "id": "src-60QLR3CH",
+                "name": "Trending Anime Series",
+                "genre": "Trending Anime Series",
+                "title": "Trending Anime Series",
+                "sortBy": "popularity.desc",
+                "filters": {
+                  "withGenres": "16",
+                  "voteCountGte": 60,
+                  "withoutKeywords": "198385|378816|155477|256466|329280|570|1817|15078|13059|195669|325693|360629|284535|356759|337946",
+                  "withOriginalLanguage": "ja"
+                },
+                "provider": "tmdb",
+                "mediaType": "TV",
+                "tmdbSourceType": "DISCOVER"
+              },
+              {
+                "id": "src-3OBFNGID",
+                "name": "Top Rated Anime Series",
+                "genre": "Top Rated Anime Series",
+                "title": "Top Rated Anime Series",
+                "sortBy": "vote_average.desc",
+                "filters": {
+                  "withGenres": "16",
+                  "voteCountGte": 400,
+                  "withoutKeywords": "198385|378816|155477|256466|329280|570|1817|15078|13059|195669|325693|360629|284535|356759|337946",
+                  "withOriginalLanguage": "ja"
+                },
+                "provider": "tmdb",
+                "mediaType": "TV",
+                "tmdbSourceType": "DISCOVER"
+              },
+              {
+                "id": "src-28C4UZ10",
+                "name": "Trending Anime Films",
+                "genre": "Trending Anime Films",
+                "title": "Trending Anime Films",
+                "sortBy": "popularity.desc",
+                "filters": {
+                  "withGenres": "16",
+                  "voteCountGte": 120,
+                  "withoutKeywords": "198385|378816|155477|256466|329280|570|1817|15078|13059|195669|325693|360629|284535|356759|337946",
+                  "withOriginalLanguage": "ja"
+                },
+                "provider": "tmdb",
+                "mediaType": "MOVIE",
+                "tmdbSourceType": "DISCOVER"
+              },
+              {
+                "id": "src-BK4KJJNV",
+                "name": "Top Rated Anime Films",
+                "genre": "Top Rated Anime Films",
+                "title": "Top Rated Anime Films",
+                "sortBy": "vote_average.desc",
+                "filters": {
+                  "withGenres": "16",
+                  "voteCountGte": 400,
+                  "withoutKeywords": "198385|378816|155477|256466|329280|570|1817|15078|13059|195669|325693|360629|284535|356759|337946",
+                  "withOriginalLanguage": "ja"
+                },
+                "provider": "tmdb",
+                "mediaType": "MOVIE",
+                "tmdbSourceType": "DISCOVER"
+              },
+              {
+                "id": "src-ABWAIOIK",
+                "name": "New This Season",
+                "genre": "New This Season",
+                "title": "New This Season",
+                "sortBy": "first_air_date.desc",
+                "filters": {
+                  "withGenres": "16",
+                  "voteCountGte": 5,
+                  "releaseDateGte": "2025-10-01",
+                  "withoutKeywords": "198385|378816|155477|256466|329280|570|1817|15078|13059|195669|325693|360629|284535|356759|337946",
+                  "withOriginalLanguage": "ja"
+                },
+                "provider": "tmdb",
+                "mediaType": "TV",
+                "tmdbSourceType": "DISCOVER"
+              },
+              {
+                "id": "src-3OBFNGID",
+                "name": "Modern Classics of the 2010s",
+                "genre": "Modern Classics of the 2010s",
+                "title": "Modern Classics of the 2010s",
+                "sortBy": "vote_average.desc",
+                "filters": {
+                  "withGenres": "16",
+                  "voteCountGte": 200,
+                  "releaseDateGte": "2010-01-01",
+                  "releaseDateLte": "2019-12-31",
+                  "withoutKeywords": "198385|378816|155477|256466|329280|570|1817|15078|13059|195669|325693|360629|284535|356759|337946",
+                  "withOriginalLanguage": "ja"
+                },
+                "provider": "tmdb",
+                "mediaType": "TV",
+                "tmdbSourceType": "DISCOVER"
+              }
             ],
             "hideTitle": False,
-            "tileShape": "LANDSCAPE",
-            "titleLogoUrl": "https://i.postimg.cc/L6r64vPj/Star-Wars-Logo.png",
-            "coverImageUrl": "https://i.postimg.cc/vHK1D7bP/Star-Wars.jpg",
-            "focusGifEnabled": False,
-            "heroBackdropUrl": "https://i.postimg.cc/sDtDfKWJ/Star-Wars-BG.jpg"
+            "tileShape": "landscape",
+            "focusGifUrl": "https://i.postimg.cc/KYhBq15R/VID-20260417-220322.gif",
+            "titleLogoUrl": "https://raw.githubusercontent.com/ImKaptain/nuvio-art/main/art/anime/discover-anime/discover-anime-logo.png",
+            "coverImageUrl": "https://i.postimg.cc/nLSgj8fw/Anime-Logo-PNG-HD-Image(1).png",
+            "catalogSources": [],
+            "focusGifEnabled": True,
+            "heroBackdropUrl": "https://raw.githubusercontent.com/ImKaptain/nuvio-art/main/art/anime/discover-anime/discover-anime-backdrop.jpg"
           }
         ],
         "pinToTop": True,
