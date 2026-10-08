@@ -45,9 +45,9 @@ async def send_start_message(client: Client, message: Message):
                 '🧩 <b>Addon Manifest URL (Stremio & Nuvio):</b>\n'
                 f'<code>{addon_url}</code>\n\n'
                 '📱 <b>Nuvio Collection URLs (Optional):</b>\n'
-                f'• <b>Full Collection:</b> <code>{nuvio_url}</code>\n'
-                f'• <b>OTT Platforms Only:</b> <code>{nuvio_ott_url}</code>\n'
-                f'• <b>TMDb Franchises Only:</b> <code>{nuvio_explore_url}</code>\n\n'
+                f'• <a href="{nuvio_url}">Full Collection</a>\n'
+                f'• <a href="{nuvio_ott_url}">OTT Platforms Only</a>\n'
+                f'• <a href="{nuvio_explore_url}">TMDb Franchises Only</a>\n\n'
                 '• Add the <b>Addon Manifest URL</b> into Stremio or Nuvio under Addons.\n'
                 '• Use the <b>Nuvio Collection File</b> if you want logo catalog buttons on Nuvio home screen!',
                 quote=True,
@@ -133,9 +133,9 @@ async def send_start_message(client: Client, message: Message):
             '🧩 <b>Addon Manifest URL (Stremio & Nuvio):</b>\n'
             f'<code>{addon_url}</code>\n\n'
             '📱 <b>Nuvio Collection URLs (Optional):</b>\n'
-            f'• <b>Full Collection:</b> <code>{nuvio_url}</code>\n'
-            f'• <b>OTT Platforms Only:</b> <code>{nuvio_ott_url}</code>\n'
-            f'• <b>TMDb Franchises Only:</b> <code>{nuvio_explore_url}</code>\n\n'
+            f'• <a href="{nuvio_url}">Full Collection</a>\n'
+            f'• <a href="{nuvio_ott_url}">OTT Platforms Only</a>\n'
+            f'• <a href="{nuvio_explore_url}">TMDb Franchises Only</a>\n\n'
             '• Add the <b>Addon Manifest URL</b> into Stremio or Nuvio under Addons.\n'
             '• Use the <b>Nuvio Collection File</b> if you want logo catalog buttons on Nuvio home screen!',
             quote=True,
