@@ -240,9 +240,13 @@ async def admin_review(client: Client, callback_query: CallbackQuery):
             await db.align_token_with_subscription(target_user_id)
             addon_url = f"{SettingsManager.current().base_url}/stremio/{token_doc.get('token')}/manifest.json"
             nuvio_url = f"{SettingsManager.current().base_url}/stremio/{token_doc.get('token')}/nuvio-collection.json"
+            nuvio_ott_url = f"{SettingsManager.current().base_url}/stremio/{token_doc.get('token')}/nuvio-ott-collection.json"
+            nuvio_explore_url = f"{SettingsManager.current().base_url}/stremio/{token_doc.get('token')}/nuvio-explore-collection.json"
         except Exception:
             addon_url = None
             nuvio_url = None
+            nuvio_ott_url = None
+            nuvio_explore_url = None
 
         try:
             invite_link = await client.create_chat_invite_link(
@@ -264,10 +268,12 @@ async def admin_review(client: Client, callback_query: CallbackQuery):
             success_text += (
                 f"\n\n🧩 <b>Addon Manifest URL (Stremio & Nuvio):</b>\n"
                 f"<code>{addon_url}</code>\n\n"
-                f"📱 <b>Nuvio Collection URL (Optional):</b>\n"
-                f"<code>{nuvio_url}</code>\n\n"
+                f"📱 <b>Nuvio Collection URLs (Optional):</b>\n"
+                f"• <b>Full Collection:</b> <code>{nuvio_url}</code>\n"
+                f"• <b>OTT Platforms Only:</b> <code>{nuvio_ott_url}</code>\n"
+                f"• <b>TMDb Franchises Only:</b> <code>{nuvio_explore_url}</code>\n\n"
                 f"• Add the <b>Addon Manifest URL</b> into Stremio or Nuvio under Addons.\n"
-                f"• Use the <b>Nuvio Collection URL/File</b> if you want logo catalog buttons on Nuvio home screen!"
+                f"• Use the <b>Nuvio Collection File</b> if you want logo catalog buttons on Nuvio home screen!"
             )
         await client.send_message(target_user_id, success_text)
 
@@ -275,17 +281,22 @@ async def admin_review(client: Client, callback_query: CallbackQuery):
             try:
                 import io, json
                 from Backend.fastapi.routes.stremio_routes import build_nuvio_collection_data
-                col_data = await build_nuvio_collection_data(token_doc.get("token"))
-                json_bytes = json.dumps(col_data, indent=2).encode("utf-8")
-                file_obj = io.BytesIO(json_bytes)
-                file_obj.name = "nuvio_collection.json"
-                await client.send_document(
-                    chat_id=target_user_id,
-                    document=file_obj,
-                    caption="📱 <b>Nuvio Collection File</b>\n\nDownload this file and import directly into Nuvio!"
-                )
+                for mode, fname, label in [
+                    ("full", "nuvio_collection.json", "Full Collection (OTT + Franchises)"),
+                    ("ott", "nuvio_ott_collection.json", "OTT Platforms Only"),
+                    ("explore", "nuvio_explore_collection.json", "TMDb & Trakt Franchises Only"),
+                ]:
+                    col_data = await build_nuvio_collection_data(token_doc.get("token"), mode)
+                    json_bytes = json.dumps(col_data, indent=2).encode("utf-8")
+                    file_obj = io.BytesIO(json_bytes)
+                    file_obj.name = fname
+                    await client.send_document(
+                        chat_id=target_user_id,
+                        document=file_obj,
+                        caption=f"📱 <b>Nuvio {label} File</b>\n\nDownload this file and import directly into Nuvio!"
+                    )
             except Exception as e:
-                LOGGER.error(f"Error sending Nuvio collection file: {e}")
+                LOGGER.error(f"Error sending Nuvio collection files: {e}")
 
         mention, username_str = await _resolve_target_info(client, target_user_id)
         info_text = _plan_info_text(mention, username_str, target_user_id, duration, price)
