@@ -651,55 +651,79 @@ async def get_manifest(token: str, token_data: dict = Depends(verify_token)):
     }
 
 
-async def build_nuvio_collection_data(token: str, collection_type: str = "full") -> list:
+async def build_nuvio_collection_data(token: str, collection_type: str = "full", token_data: Optional[dict] = None) -> list:
     addon_id = f"telegram.media.{token[:8]}"
     
-    # Map catalog names to catalog IDs for this token
-    catalog_map = {}
-    auto_key_map = {}
+    # Map catalog names to catalog IDs for this token, separated by media type
+    catalog_movies_map = {}
+    catalog_series_map = {}
+    auto_key_movies_map = {}
+    auto_key_series_map = {}
+
     try:
         custom_catalogs = await db.get_custom_catalogs()
         for catalog in custom_catalogs:
+            # Check visibility and items
+            raw_items = catalog.get("items") or []
+            if token_data:
+                visible_items = [
+                    i for i in raw_items
+                    if _token_can_view(*_effective_visibility(catalog, i), token_data)
+                ]
+            else:
+                visible_items = raw_items
+
+            has_movie = any(i.get("media_type") == "movie" for i in visible_items)
+            has_series = any(i.get("media_type") == "tv" for i in visible_items)
+
             cid = f"custom_{catalog.get('_id')}"
             name = (catalog.get("name") or "").lower().strip()
-            catalog_map[name] = cid
-            auto_key = catalog.get("auto_key")
-            if auto_key:
-                auto_key_map[auto_key.lower().strip()] = cid
+            auto_key = (catalog.get("auto_key") or "").lower().strip()
+
+            if has_movie:
+                catalog_movies_map[name] = cid
+                if auto_key:
+                    auto_key_movies_map[auto_key] = cid
+            if has_series:
+                catalog_series_map[name] = cid
+                if auto_key:
+                    auto_key_series_map[auto_key] = cid
     except Exception:
         pass
 
-    # Helper to get catalog ID for movies and series
-    def get_cat_id(name_query: str, auto_key: str = "", fallback: str = "latest_movies", strict: bool = False):
-        for name, cid in catalog_map.items():
+    # Helper to get catalog ID for movies and series only if they actually have content
+    def get_cat_id(name_query: str, auto_key: str = "", media_type: str = "movie", fallback: Optional[str] = None, strict: bool = True):
+        cmap = catalog_movies_map if media_type == "movie" else catalog_series_map
+        amap = auto_key_movies_map if media_type == "movie" else auto_key_series_map
+        for name, cid in cmap.items():
             if name_query.lower() in name:
                 return cid
-        if auto_key and auto_key.lower() in auto_key_map:
-            return auto_key_map[auto_key.lower()]
+        if auto_key and auto_key.lower() in amap:
+            return amap[auto_key.lower()]
         return None if strict else fallback
 
-    hotstar_movie = get_cat_id("hotstar", "auto_hotstar", strict=True)
-    hotstar_series = get_cat_id("hotstar", "auto_hotstar", strict=True)
-    netflix_movie = get_cat_id("netflix", "auto_netflix", strict=True)
-    netflix_series = get_cat_id("netflix", "auto_netflix", strict=True)
-    prime_movie = get_cat_id("prime", "auto_prime_video", strict=True)
-    prime_series = get_cat_id("prime", "auto_prime_video", strict=True)
-    apple_movie = get_cat_id("apple", "auto_apple_tv", strict=True)
-    apple_series = get_cat_id("apple", "auto_apple_tv", strict=True)
-    hbo_movie = get_cat_id("hbo", "auto_hbo", strict=True)
-    hbo_series = get_cat_id("hbo", "auto_hbo", strict=True)
-    hulu_movie = get_cat_id("hulu", "auto_hulu", strict=True)
-    hulu_series = get_cat_id("hulu", "auto_hulu", strict=True)
-    mx_movie = get_cat_id("mx", "auto_mx_player", strict=True)
-    mx_series = get_cat_id("mx", "auto_mx_player", strict=True)
-    sony_movie = get_cat_id("sony", "auto_sonyliv", strict=True)
-    sony_series = get_cat_id("sony", "auto_sonyliv", strict=True)
-    zee5_movie = get_cat_id("zee", "auto_zee5", strict=True)
-    zee5_series = get_cat_id("zee", "auto_zee5", strict=True)
-    crunchyroll_movie = get_cat_id("crunchyroll", "auto_crunchyroll", strict=True)
-    crunchyroll_series = get_cat_id("crunchyroll", "auto_crunchyroll", strict=True)
-    bollywood_movie = get_cat_id("bollywood", "auto_bollywood", "latest_movies")
-    bollywood_series = get_cat_id("bollywood", "auto_bollywood", "latest_series")
+    hotstar_movie = get_cat_id("hotstar", "auto_hotstar", "movie", strict=True)
+    hotstar_series = get_cat_id("hotstar", "auto_hotstar", "series", strict=True)
+    netflix_movie = get_cat_id("netflix", "auto_netflix", "movie", strict=True)
+    netflix_series = get_cat_id("netflix", "auto_netflix", "series", strict=True)
+    prime_movie = get_cat_id("prime", "auto_prime_video", "movie", strict=True)
+    prime_series = get_cat_id("prime", "auto_prime_video", "series", strict=True)
+    apple_movie = get_cat_id("apple", "auto_apple_tv", "movie", strict=True)
+    apple_series = get_cat_id("apple", "auto_apple_tv", "series", strict=True)
+    hbo_movie = get_cat_id("hbo", "auto_hbo", "movie", strict=True)
+    hbo_series = get_cat_id("hbo", "auto_hbo", "series", strict=True)
+    hulu_movie = get_cat_id("hulu", "auto_hulu", "movie", strict=True)
+    hulu_series = get_cat_id("hulu", "auto_hulu", "series", strict=True)
+    mx_movie = get_cat_id("mx", "auto_mx_player", "movie", strict=True)
+    mx_series = get_cat_id("mx", "auto_mx_player", "series", strict=True)
+    sony_movie = get_cat_id("sony", "auto_sonyliv", "movie", strict=True)
+    sony_series = get_cat_id("sony", "auto_sonyliv", "series", strict=True)
+    zee5_movie = get_cat_id("zee", "auto_zee5", "movie", strict=True)
+    zee5_series = get_cat_id("zee", "auto_zee5", "series", strict=True)
+    crunchyroll_movie = get_cat_id("crunchyroll", "auto_crunchyroll", "movie", strict=True)
+    crunchyroll_series = get_cat_id("crunchyroll", "auto_crunchyroll", "series", strict=True)
+    bollywood_movie = get_cat_id("bollywood", "auto_bollywood", "movie", fallback="latest_movies", strict=False)
+    bollywood_series = get_cat_id("bollywood", "auto_bollywood", "series", fallback="latest_series", strict=False)
 
     ott_collection = {
         "id": "collection-erfs5gwk-community",
@@ -1384,17 +1408,17 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full")
 #----- Dynamic Nuvio Collection JSON for this token
 @router.get("/{token}/nuvio-collection.json")
 async def get_nuvio_collection(token: str, token_data: dict = Depends(verify_token)):
-    return await build_nuvio_collection_data(token, "full")
+    return await build_nuvio_collection_data(token, "full", token_data)
 
 
 @router.get("/{token}/nuvio-ott-collection.json")
 async def get_nuvio_ott_collection(token: str, token_data: dict = Depends(verify_token)):
-    return await build_nuvio_collection_data(token, "ott")
+    return await build_nuvio_collection_data(token, "ott", token_data)
 
 
 @router.get("/{token}/nuvio-explore-collection.json")
 async def get_nuvio_explore_collection(token: str, token_data: dict = Depends(verify_token)):
-    return await build_nuvio_collection_data(token, "explore")
+    return await build_nuvio_collection_data(token, "explore", token_data)
 
 
 #----- Catalog listing (latest/popular/custom, with genre/search/skip)
