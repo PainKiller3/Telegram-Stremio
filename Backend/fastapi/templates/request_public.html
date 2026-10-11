@@ -151,13 +151,27 @@ async function loadPopular() {
     const data = await res.json();
     const items = data.data || [];
     if (!items.length) { wrap.style.display = 'none'; return; }
-    wrap.style.display = '';
     box.innerHTML = items.map(popularCard).join('');
   } catch (err) {
     wrap.style.display = 'none';
   }
 }
 
-document.addEventListener('DOMContentLoaded', loadPopular);
+async function checkUrlQuery() {
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get('q');
+  if (q) {
+    const input = document.getElementById('rp-q');
+    if (input) {
+      input.value = q;
+      doSearch();
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadPopular();
+  checkUrlQuery();
+});
 </script>
 {% endblock %}
