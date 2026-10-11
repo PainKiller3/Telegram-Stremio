@@ -44,6 +44,22 @@ def _donation():
     text = "Enjoying Telegram Stremio?\nTap to support the developer"
     return {"name": "❤️ Support", "title": text, "description": text, "externalUrl": "https://donate.weebzonex.workers.dev"}
 
+def _request_stream(query: Optional[str] = None):
+    base = SettingsManager.current().base_url or ""
+    if base:
+        request_url = f"{base.rstrip('/')}/request"
+        if query:
+            request_url += f"?q={quote(query)}"
+    else:
+        request_url = get_streambot_url()
+
+    return {
+        "name": "📥 Request Media",
+        "title": "Not available yet in library.\nClick to open Public Request Page & request this title!",
+        "description": "Tap to request this title",
+        "externalUrl": request_url
+    }
+
 def build_proxy_url(original_url: str) -> str | None:
     settings = SettingsManager.current()
     base = settings.http_proxy_url
@@ -1957,7 +1973,8 @@ async def get_streams(
             streams = filtered
 
     if not streams:
-        return {"streams": [_donation()]}
+        req_query = imdb_id or (media_details.get("title") or media_details.get("name") if media_details else None)
+        return {"streams": [_request_stream(req_query), _donation()]}
 
     ascending = config.get("quality_sort") == "asc"
     if is_combined:
