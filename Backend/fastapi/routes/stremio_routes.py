@@ -11,6 +11,8 @@ from fastapi.templating import Jinja2Templates
 from pyrogram.enums import ChatMemberStatus
 from pyrogram.errors import UserNotParticipant
 
+import httpx
+
 from Backend import __version__, db
 from Backend.config import Telegram
 from Backend.helper.analytics import client_ip_from, record_client
@@ -20,7 +22,8 @@ from Backend.fastapi.themes import DEFAULT_THEME, DEFAULT_STYLE, get_theme
 from Backend.helper.fanart import fanart_artwork
 from Backend.helper.global_search import global_search, is_global_search_enabled
 from Backend.helper.metadata.providers.cinemeta import get_detail, get_season
-from Backend.helper.metadata import resolve_cover_url, COMBINED_SEASON, COMBINED_EPISODE_BASE
+from Backend.helper.metadata import resolve_cover_url, COMBINED_SEASON, COMBINED_EPISODE_BASE, tmdb_api_key
+from Backend.helper.database import convert_objectid_to_str
 from Backend.helper.split_files import parse_combined_episodes, combined_name_key
 from Backend.helper.settings_manager import SettingsManager
 from Backend.helper.subtitles import get_subtitles_for, stremio_subtitle_entries
@@ -118,6 +121,101 @@ def _merge_filters(*filters) -> dict:
     if not parts:
         return {}
     return parts[0] if len(parts) == 1 else {"$and": parts}
+
+
+_TMDB_TRENDING_CACHE: dict = {}
+_TMDB_TRENDING_LOCKS: dict = {}
+_TMDB_TRENDING_TTL = 600  # 10 minutes cache
+
+
+async def _get_tmdb_trending_ids(media_type: str, time_window: str = "day") -> list[int]:
+    """Fetch daily trending TMDB IDs (cached for 10 minutes)."""
+    api_key = tmdb_api_key()
+    if not api_key:
+        return []
+
+    cache_key = (media_type, time_window)
+    now = time.monotonic()
+    cached = _TMDB_TRENDING_CACHE.get(cache_key)
+    if cached and now - cached[0] < _TMDB_TRENDING_TTL:
+        return list(cached[1])
+
+    lock = _TMDB_TRENDING_LOCKS.setdefault(cache_key, asyncio.Lock())
+    async with lock:
+        now = time.monotonic()
+        cached = _TMDB_TRENDING_CACHE.get(cache_key)
+        if cached and now - cached[0] < _TMDB_TRENDING_TTL:
+            return list(cached[1])
+
+        ids: list[int] = []
+        try:
+            url = f"https://api.themoviedb.org/3/trending/{media_type}/{time_window}"
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.get(url, params={"api_key": api_key, "page": 1})
+                if resp.status_code == 200:
+                    data = resp.json()
+                    for item in data.get("results") or []:
+                        raw_id = item.get("id")
+                        if raw_id:
+                            try:
+                                ids.append(int(raw_id))
+                            except (TypeError, ValueError):
+                                pass
+        except Exception as exc:
+            LOGGER.warning(f"[TMDB Trending] Fetch failed for {media_type}: {exc}")
+            if cached:
+                return list(cached[1])
+            return []
+
+        if ids:
+            _TMDB_TRENDING_CACHE[cache_key] = (time.monotonic(), ids)
+        return ids
+
+
+async def _get_db_matches_in_tmdb_order(
+    media_type: str, tmdb_ids: list[int], token_data: dict, genre_filter: Optional[str] = None
+) -> list[dict]:
+    """Match local MongoDB records for TMDB IDs while preserving exact TMDB trending rank."""
+    if not tmdb_ids:
+        return []
+
+    collection_name = "tv" if media_type == "series" else "movie"
+    query_parts = [
+        {"tmdb_id": {"$in": tmdb_ids}},
+        _visibility_query(token_data),
+        _not_exclusive_clause(),
+    ]
+    if genre_filter:
+        query_parts.append({"genres": {"$in": [genre_filter]}})
+    query = _merge_filters(*query_parts)
+
+    by_tmdb_id: dict[int, dict] = {}
+    storage_keys = [key for key in db.dbs if str(key).startswith("storage_")]
+    storage_keys.sort(key=lambda k: int(str(k).split("_", 1)[1]) if str(k).split("_", 1)[1].isdigit() else 0, reverse=True)
+
+    for db_key in storage_keys:
+        try:
+            cursor = db.dbs[db_key][collection_name].find(query)
+            async for item in cursor:
+                try:
+                    t_id = int(item.get("tmdb_id"))
+                except (TypeError, ValueError):
+                    continue
+                if t_id in by_tmdb_id:
+                    continue
+                if not _token_can_view(
+                    item.get("visibility") or "public",
+                    item.get("allowed_tokens") or [],
+                    token_data,
+                ):
+                    continue
+                by_tmdb_id[t_id] = convert_objectid_to_str(item) if "convert_objectid_to_str" in globals() else item
+        except Exception as exc:
+            LOGGER.warning(f"[TMDB Trending] DB error querying {db_key}: {exc}")
+
+    # Preserve the exact ranking from TMDB
+    ordered = [by_tmdb_id[tid] for tid in tmdb_ids if tid in by_tmdb_id]
+    return ordered
 
 
 def _parse_stremio_id(id: str):
@@ -387,6 +485,26 @@ async def get_manifest(token: str, token_data: dict = Depends(verify_token)):
         catalogs = [
             {
                 "type": "movie",
+                "id": "trending_movies",
+                "name": "Trending",
+                "extra": [
+                    {"name": "genre", "isRequired": False, "options": GENRES},
+                    {"name": "skip"}
+                ],
+                "extraSupported": ["genre", "skip"]
+            },
+            {
+                "type": "series",
+                "id": "trending_series",
+                "name": "Trending",
+                "extra": [
+                    {"name": "genre", "isRequired": False, "options": GENRES},
+                    {"name": "skip"}
+                ],
+                "extraSupported": ["genre", "skip"]
+            },
+            {
+                "type": "movie",
                 "id": "latest_movies",
                 "name": "Latest",
                 "extra": [
@@ -591,20 +709,20 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full")
             "id": "68ba6673-3480-4601-980e-4f69862777c3",
             "title": "Trending Now",
             "sources": [
+              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": "trending_movies"},
+              {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": "trending_series"},
               {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": "latest_movies"},
-              {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": "latest_series"},
-              {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": "top_movies"},
-              {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": "top_series"}
+              {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": "latest_series"}
             ],
             "hideTitle": False,
             "tileShape": "landscape",
             "focusGifUrl": "https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUydnAzNGpkNTljNG9iOXR4dTE3cHA4djR3Y3ZoN3B5czQxaHlkYXk3cSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/SIkWDYx30MwcAkz0CQ/giphy.gif",
             "coverImageUrl": "https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUydnAzNGpkNTljNG9iOXR4dTE3cHA4djR3Y3ZoN3B5czQxaHlkYXk3cSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/SIkWDYx30MwcAkz0CQ/giphy.gif",
             "catalogSources": [
+              {"type": "movie", "addonId": addon_id, "catalogId": "trending_movies"},
+              {"type": "series", "addonId": addon_id, "catalogId": "trending_series"},
               {"type": "movie", "addonId": addon_id, "catalogId": "latest_movies"},
-              {"type": "series", "addonId": addon_id, "catalogId": "latest_series"},
-              {"type": "movie", "addonId": addon_id, "catalogId": "top_movies"},
-              {"type": "series", "addonId": addon_id, "catalogId": "top_series"}
+              {"type": "series", "addonId": addon_id, "catalogId": "latest_series"}
             ],
             "focusGifEnabled": True
           },
@@ -1344,6 +1462,40 @@ async def get_catalog(token: str, media_type: str, id: str, extra: Optional[str]
             all_items = search_results.get("results", [])
             db_media_type = "tv" if media_type == "series" else "movie"
             items = [item for item in all_items if item.get("media_type") == db_media_type]
+        elif id in {"trending_movies", "trending_series"}:
+            expected_type = "movie" if id == "trending_movies" else "series"
+            if media_type != expected_type:
+                return {"metas": []}
+
+            items = []
+            tmdb_type = "movie" if media_type == "movie" else "tv"
+            trending_ids = await _get_tmdb_trending_ids(tmdb_type, "day")
+            if trending_ids:
+                db_matches = await _get_db_matches_in_tmdb_order(
+                    media_type, trending_ids, token_data, genre_filter=genre_filter
+                )
+                if search_query:
+                    q = search_query.lower()
+                    db_matches = [
+                        it for it in db_matches
+                        if q in (it.get("title") or "").lower()
+                        or q in (it.get("name") or "").lower()
+                        or q in (it.get("original_title") or "").lower()
+                    ]
+                start = max(stremio_skip, 0)
+                items = db_matches[start:start + PAGE_SIZE]
+
+            # Fallback to latest uploaded media if TMDB is unconfigured, empty, or returns no DB matches
+            if not items and stremio_skip == 0:
+                LOGGER.info(f"[TMDB Trending] Falling back to latest {media_type} for catalog {id}")
+                sort_params = [("updated_on", "desc")]
+                vis_filter = _merge_filters(_visibility_query(token_data), _not_exclusive_clause())
+                if media_type == "movie":
+                    data = await db.sort_movies(sort_params, page, PAGE_SIZE, genre_filter=genre_filter, extra_filter=vis_filter)
+                    items = data.get("movies", [])
+                else:
+                    data = await db.sort_tv_shows(sort_params, page, PAGE_SIZE, genre_filter=genre_filter, extra_filter=vis_filter)
+                    items = data.get("tv_shows", [])
         else:
             if "latest" in id:
                 sort_params = [("updated_on", "desc")]
@@ -1963,6 +2115,8 @@ async def configure_addon(token: str, request: Request):
 #----- Catalogs this token can see, in effective (token or global) order
 async def _addon_catalogs_for_token(token_data: dict) -> list:
     entries = [
+        {"id": "trending_movies", "name": "Trending Movies", "type": "movie"},
+        {"id": "trending_series", "name": "Trending Series", "type": "series"},
         {"id": "latest_movies", "name": "Latest Movies", "type": "movie"},
         {"id": "top_movies", "name": "Popular Movies", "type": "movie"},
         {"id": "latest_series", "name": "Latest Series", "type": "series"},
