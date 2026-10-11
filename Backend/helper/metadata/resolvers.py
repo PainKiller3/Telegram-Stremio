@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from Backend.helper.metadata.common import split_default_id, title_similarity, CINEMETA_THRESHOLD
+from Backend.helper.metadata.common import split_default_id, title_similarity, CINEMETA_THRESHOLD, SERIES_TITLE_THRESHOLD
 from Backend.helper.metadata.providers import cinemeta, kitsu, tmdb, tvdb
 from Backend.logger import LOGGER
 
@@ -124,7 +124,7 @@ async def resolve_series(
             ep = await cinemeta.cached_season(imdb_id, season, episode)
             if detail:
                 sim = title_similarity(title, detail.get("title", ""))
-                if sim >= CINEMETA_THRESHOLD or explicit_imdb:
+                if sim >= SERIES_TITLE_THRESHOLD or explicit_imdb:
                     return cinemeta.build_tv_payload(
                         detail, ep or {}, imdb_id, title, season, episode, quality, encoded_string
                     )

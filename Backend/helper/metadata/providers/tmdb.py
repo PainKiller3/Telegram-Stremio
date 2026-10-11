@@ -18,6 +18,7 @@ from Backend.helper.metadata.common import (
     TMDB_DETAILS_CACHE,
     TMDB_SEARCH_CACHE,
     TMDB_THRESHOLD,
+    SERIES_TITLE_THRESHOLD,
     cached_call,
     format_runtime,
     format_tmdb_image,
@@ -169,7 +170,8 @@ async def pick_best(results, query_title: str, query_year: Optional[int], media_
             if best_score >= STRONG_MATCH:
                 break
 
-    return best_item if best_score >= TMDB_THRESHOLD and best_item is not None else None
+    minimum_score = SERIES_TITLE_THRESHOLD if media_type != "movie" else TMDB_THRESHOLD
+    return best_item if best_score >= minimum_score and best_item is not None else None
 
 
 async def safe_search(title: str, type_: str, year: Optional[int] = None):

@@ -17,6 +17,7 @@ from Backend.helper.metadata.common import (
     STRONG_MATCH,
     TVDB_CACHE,
     TVDB_THRESHOLD,
+    SERIES_TITLE_THRESHOLD,
     cached_call,
     format_imdb_images,
     logo_from_imdb,
@@ -233,7 +234,8 @@ async def search(title: str, year: Optional[int] = None, entity: str = "series")
                 if sc2 > best_score:
                     best_score, best = sc2, r
 
-        if best and best_score >= TVDB_THRESHOLD:
+        minimum_score = SERIES_TITLE_THRESHOLD if entity == "series" else TVDB_THRESHOLD
+        if best and best_score >= minimum_score:
             LOGGER.info(
                 f"[TVDB] match '{title}' -> '{best.get('name')}' "
                 f"[{best.get('tvdb_id') or best.get('id')}] score={best_score:.2f}"

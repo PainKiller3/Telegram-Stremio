@@ -10,6 +10,7 @@ import httpx
 from Backend.helper.metadata.common import (
     ensure_media_ids,
     CINEMETA_THRESHOLD,
+    SERIES_TITLE_THRESHOLD,
     IMDB_CACHE,
     STRONG_MATCH,
     cached_call,
@@ -192,7 +193,8 @@ async def safe_search(title: str, type_: str, year: Optional[int] = None) -> str
             if not is_tv and best_score >= STRONG_MATCH:
                 break
 
-        if best_score >= CINEMETA_THRESHOLD and best_id:
+        minimum_score = SERIES_TITLE_THRESHOLD if is_tv else CINEMETA_THRESHOLD
+        if best_score >= minimum_score and best_id:
             LOGGER.info(
                 f"Cinemeta match: '{title}' (year={year}) -> '{best_title}' [{best_id}] "
                 f"(score={best_score:.2f})"
