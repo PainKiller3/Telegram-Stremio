@@ -64,7 +64,7 @@ async def send_start_message(client: Client, message: Message):
                         ("explore", "nuvio_explore_collection.json", "TMDb & Trakt Franchises Only"),
                     ]:
                         col_data = await build_nuvio_collection_data(token_token, mode)
-                        json_bytes = json.dumps(col_data, indent=2).encode("utf-8")
+                        json_bytes = json.dumps(col_data, indent=2, ensure_ascii=False).encode("utf-8")
                         file_obj = io.BytesIO(json_bytes)
                         file_obj.name = fname
                         await client.send_document(
@@ -152,7 +152,7 @@ async def send_start_message(client: Client, message: Message):
                     ("explore", "nuvio_explore_collection.json", "TMDb & Trakt Franchises Only"),
                 ]:
                     col_data = await build_nuvio_collection_data(token_doc.get("token"), mode)
-                    json_bytes = json.dumps(col_data, indent=2).encode("utf-8")
+                    json_bytes = json.dumps(col_data, indent=2, ensure_ascii=False).encode("utf-8")
                     file_obj = io.BytesIO(json_bytes)
                     file_obj.name = fname
                     await client.send_document(
