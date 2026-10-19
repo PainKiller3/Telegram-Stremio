@@ -50,7 +50,14 @@ def _poster(path: str) -> str:
 
 
 def _approver_ids() -> list:
-    return SettingsManager.current().approver_ids or ([Telegram.OWNER_ID] if Telegram.OWNER_ID else [])
+    raw = SettingsManager.current().approver_ids or ([Telegram.OWNER_ID] if Telegram.OWNER_ID else [])
+    seen = set()
+    deduped = []
+    for x in raw:
+        if x and x not in seen:
+            seen.add(x)
+            deduped.append(x)
+    return deduped
 
 
 async def _notify_admin_request(title: str, year: Optional[int], media_type: str, count: int, imdb_id=None, tmdb_id=None, is_new: bool = True):
@@ -276,6 +283,9 @@ async def media_exists(media_type: str, tmdb_id, imdb_id, title: str, year=None)
     return False
 
 
+_submit_lock = asyncio.Lock()
+
+
 #----- Public submit: de-duplicated per title, honouring banned/denied/uploaded state
 async def submit_request(*, media_type, tmdb_id, imdb_id, title, year, poster, client_ip) -> dict:
     media_type = _norm_type(media_type)
@@ -287,74 +297,86 @@ async def submit_request(*, media_type, tmdb_id, imdb_id, title, year, poster, c
     if not tmdb_id and not imdb_id:
         return {"ok": False, "reason": "invalid"}
 
-    #----- Match an existing request by either id (imdb id preferred)
-    ors = []
-    if imdb_id:
-        ors.append({"imdb_id": imdb_id})
-    if tmdb_id:
-        ors.append({"tmdb_id": tmdb_id})
-    now = datetime.utcnow()
-    iphash = _hash_ip(client_ip)
-    existing = await _coll().find_one({"media_type": media_type, "$or": ors})
+    async with _submit_lock:
+        #----- Match an existing request by either id (imdb id preferred)
+        ors = []
+        if imdb_id:
+            ors.append({"imdb_id": imdb_id})
+        if tmdb_id:
+            ors.append({"tmdb_id": tmdb_id})
+        now = datetime.utcnow()
+        iphash = _hash_ip(client_ip)
+        existing = await _coll().find_one({"media_type": media_type, "$or": ors})
 
-    if existing:
-        if existing.get("status") == "banned":
-            return {"ok": False, "reason": "banned", "title": existing.get("title")}
+        if existing:
+            if existing.get("status") == "banned":
+                return {"ok": False, "reason": "banned", "title": existing.get("title")}
 
-        update = {"$addToSet": {"requesters": iphash}, "$set": {"last_requested_at": now, "updated_at": now}}
-        if imdb_id and not existing.get("imdb_id"):
-            update["$set"]["imdb_id"] = imdb_id
-        if tmdb_id and not existing.get("tmdb_id"):
-            update["$set"]["tmdb_id"] = tmdb_id
+            old_requesters = set(existing.get("requesters") or [])
+            already_voted = iphash in old_requesters
+            status = existing.get("status")
 
-        reason = "added"
-        if existing.get("status") == "uploaded":
-            reason = "already_available"
-        elif existing.get("status") == "denied":
-            update["$set"]["status"] = "pending"
-            reason = "reopened"
+            update = {"$addToSet": {"requesters": iphash}, "$set": {"last_requested_at": now, "updated_at": now}}
+            if imdb_id and not existing.get("imdb_id"):
+                update["$set"]["imdb_id"] = imdb_id
+            if tmdb_id and not existing.get("tmdb_id"):
+                update["$set"]["tmdb_id"] = tmdb_id
 
-        await _coll().update_one({"_id": existing["_id"]}, update)
-        new_count = len(set(existing.get("requesters") or []) | {iphash})
+            reason = "added"
+            reopened = False
+            if status == "uploaded":
+                reason = "already_available"
+            elif status == "denied":
+                update["$set"]["status"] = "pending"
+                reason = "reopened"
+                reopened = True
+            elif already_voted:
+                reason = "already_voted"
+
+            await _coll().update_one({"_id": existing["_id"]}, update)
+            new_count = len(old_requesters | {iphash})
+
+            # Only notify admin if this is a newly reopened request or a fresh vote from a new user on a pending request
+            if (not already_voted or reopened) and status != "uploaded":
+                asyncio.create_task(_notify_admin_request(
+                    title=existing.get("title") or title or "Untitled",
+                    year=existing.get("year") or year,
+                    media_type=media_type,
+                    count=new_count,
+                    imdb_id=existing.get("imdb_id") or imdb_id,
+                    tmdb_id=existing.get("tmdb_id") or tmdb_id,
+                    is_new=False
+                ))
+            return {"ok": True, "reason": reason, "title": existing.get("title")}
+
+        #----- Not requested before: if it's already in the library, no request needed
+        if await media_exists(media_type, tmdb_id, imdb_id, title, year):
+            return {"ok": True, "reason": "already_available", "title": title}
+
+        doc = {
+            "media_type": media_type,
+            "tmdb_id": tmdb_id,
+            "imdb_id": imdb_id,
+            "title": (title or "Untitled")[:200],
+            "year": year,
+            "poster": poster or "",
+            "status": "pending",
+            "requesters": [iphash],
+            "created_at": now,
+            "updated_at": now,
+            "last_requested_at": now,
+        }
+        await _coll().insert_one(doc)
         asyncio.create_task(_notify_admin_request(
-            title=existing.get("title") or title or "Untitled",
-            year=existing.get("year") or year,
+            title=doc["title"],
+            year=year,
             media_type=media_type,
-            count=new_count,
-            imdb_id=existing.get("imdb_id") or imdb_id,
-            tmdb_id=existing.get("tmdb_id") or tmdb_id,
-            is_new=False
+            count=1,
+            imdb_id=imdb_id,
+            tmdb_id=tmdb_id,
+            is_new=True
         ))
-        return {"ok": True, "reason": reason, "title": existing.get("title")}
-
-    #----- Not requested before: if it's already in the library, no request needed
-    if await media_exists(media_type, tmdb_id, imdb_id, title, year):
-        return {"ok": True, "reason": "already_available", "title": title}
-
-    doc = {
-        "media_type": media_type,
-        "tmdb_id": tmdb_id,
-        "imdb_id": imdb_id,
-        "title": (title or "Untitled")[:200],
-        "year": year,
-        "poster": poster or "",
-        "status": "pending",
-        "requesters": [iphash],
-        "created_at": now,
-        "updated_at": now,
-        "last_requested_at": now,
-    }
-    await _coll().insert_one(doc)
-    asyncio.create_task(_notify_admin_request(
-        title=doc["title"],
-        year=year,
-        media_type=media_type,
-        count=1,
-        imdb_id=imdb_id,
-        tmdb_id=tmdb_id,
-        is_new=True
-    ))
-    return {"ok": True, "reason": "created", "title": doc["title"]}
+        return {"ok": True, "reason": "created", "title": doc["title"]}
 
 
 def _shape(doc: dict) -> dict:
