@@ -231,7 +231,9 @@ def _effective_visibility(catalog: dict, item: dict) -> tuple:
 
 
 #----- Whether a token may see content with the given visibility
-def _token_can_view(mode: str, allowed_tokens: list, token_data: dict) -> bool:
+def _token_can_view(mode: str, allowed_tokens: list, token_data: Optional[dict] = None) -> bool:
+    if not token_data:
+        return mode == "public"
     user_id = token_data.get("user_id")
     try:
         if user_id is not None and int(user_id) == int(Telegram.OWNER_ID):
@@ -248,7 +250,12 @@ def _token_can_view(mode: str, allowed_tokens: list, token_data: dict) -> bool:
 
 
 #----- Mongo filter that hides owner-only / restricted titles from a token
-def _visibility_query(token_data: dict) -> dict:
+def _visibility_query(token_data: Optional[dict] = None) -> dict:
+    if not token_data:
+        return {"$or": [
+            {"visibility": {"$exists": False}},
+            {"visibility": "public"},
+        ]}
     user_id = token_data.get("user_id")
     try:
         if user_id is not None and int(user_id) == int(Telegram.OWNER_ID):
@@ -981,6 +988,12 @@ async def get_manifest(token: str, token_data: dict = Depends(verify_token)):
 async def build_nuvio_collection_data(token: str, collection_type: str = "full", token_data: Optional[dict] = None) -> list:
     addon_id = f"telegram.media.{token[:8]}"
     
+    if token_data is None and token:
+        try:
+            token_data = await db.get_api_token(token)
+        except Exception:
+            token_data = None
+
     # Map catalog names to catalog IDs for this token, separated by media type
     catalog_movies_map = {}
     catalog_series_map = {}
@@ -992,13 +1005,10 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
         for catalog in custom_catalogs:
             # Check visibility and items
             raw_items = catalog.get("items") or []
-            if token_data:
-                visible_items = [
-                    i for i in raw_items
-                    if _token_can_view(*_effective_visibility(catalog, i), token_data)
-                ]
-            else:
-                visible_items = raw_items
+            visible_items = [
+                i for i in raw_items
+                if _token_can_view(*_effective_visibility(catalog, i), token_data)
+            ]
 
             has_movie = any(i.get("media_type") == "movie" for i in visible_items)
             has_series = any(i.get("media_type") == "tv" for i in visible_items)
