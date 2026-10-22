@@ -9,6 +9,7 @@ from urllib.parse import quote
 
 from rapidfuzz import fuzz
 
+from Backend.helper.bounded import BoundedDict
 from Backend.logger import LOGGER
 
 # Match thresholds
@@ -29,13 +30,13 @@ GRADIENT_COVER_BASE = "https://gradient-cover-api.vercel.app"
 API_SEMAPHORE = asyncio.Semaphore(12)
 
 # Shared caches (provider modules may also keep their own)
-IMDB_CACHE: dict = {}
-TMDB_SEARCH_CACHE: dict = {}
-TMDB_DETAILS_CACHE: dict = {}
-EPISODE_CACHE: dict = {}
-ALT_TITLES_CACHE: dict = {}
-TVDB_CACHE: dict = {}
-KITSU_CACHE: dict = {}
+IMDB_CACHE = BoundedDict(300)
+TMDB_SEARCH_CACHE = BoundedDict(300)
+TMDB_DETAILS_CACHE = BoundedDict(300)
+EPISODE_CACHE = BoundedDict(500)
+ALT_TITLES_CACHE = BoundedDict(300)
+TVDB_CACHE = BoundedDict(300)
+KITSU_CACHE = BoundedDict(300)
 
 _INFLIGHT: Dict[tuple, asyncio.Future] = {}
 
