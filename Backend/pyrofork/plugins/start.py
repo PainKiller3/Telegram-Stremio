@@ -31,11 +31,15 @@ async def send_start_message(client: Client, message: Message):
                 token_token = token_doc.get('token') if isinstance(token_doc, dict) else None
                 addon_url = f"{base_url}/stremio/{token_token}/manifest.json" if token_token else f"{base_url}/stremio/manifest.json"
                 nuvio_url = f"{base_url}/stremio/{token_token}/nuvio-collection.json" if token_token else f"{base_url}/stremio/nuvio-collection.json"
+                nuvio_ott_sports_url = f"{base_url}/stremio/{token_token}/nuvio-ott-sports-collection.json" if token_token else f"{base_url}/stremio/nuvio-ott-sports-collection.json"
+                nuvio_sports_url = f"{base_url}/stremio/{token_token}/nuvio-sports-collection.json" if token_token else f"{base_url}/stremio/nuvio-sports-collection.json"
                 nuvio_ott_url = f"{base_url}/stremio/{token_token}/nuvio-ott-collection.json" if token_token else f"{base_url}/stremio/nuvio-ott-collection.json"
                 nuvio_explore_url = f"{base_url}/stremio/{token_token}/nuvio-explore-collection.json" if token_token else f"{base_url}/stremio/nuvio-explore-collection.json"
             except Exception as e:
                 LOGGER.error(f"Error ensuring token for free user: {e}")
                 nuvio_url = f"{base_url}/stremio/nuvio-collection.json"
+                nuvio_ott_sports_url = f"{base_url}/stremio/nuvio-ott-sports-collection.json"
+                nuvio_sports_url = f"{base_url}/stremio/nuvio-sports-collection.json"
                 nuvio_ott_url = f"{base_url}/stremio/nuvio-ott-collection.json"
                 nuvio_explore_url = f"{base_url}/stremio/nuvio-explore-collection.json"
 
@@ -45,7 +49,9 @@ async def send_start_message(client: Client, message: Message):
                 '🧩 <b>Addon Manifest URL (Stremio & Nuvio):</b>\n'
                 f'<code>{addon_url}</code>\n\n'
                 '📱 <b>Nuvio Collection URLs (Optional):</b>\n'
-                f'• <a href="{nuvio_url}">Full Collection</a>\n'
+                f'• <a href="{nuvio_url}">Full Collection (Movies & Series)</a>\n'
+                f'• <a href="{nuvio_ott_sports_url}">OTT Platforms + Live Sports 🏟️</a>\n'
+                f'• <a href="{nuvio_sports_url}">Live Sports Only ⚽</a>\n'
                 f'• <a href="{nuvio_ott_url}">OTT Platforms Only</a>\n'
                 f'• <a href="{nuvio_explore_url}">TMDb Franchises Only</a>\n\n'
                 '• Add the <b>Addon Manifest URL</b> into Stremio or Nuvio under Addons.\n'
@@ -60,6 +66,8 @@ async def send_start_message(client: Client, message: Message):
                     from Backend.fastapi.routes.stremio_routes import build_nuvio_collection_data
                     for mode, fname, label in [
                         ("full", "nuvio_collection.json", "Full Collection (OTT + Franchises)"),
+                        ("full_sports", "nuvio_ott_sports_collection.json", "OTT + Live Sports 🏟️"),
+                        ("sports", "nuvio_sports_collection.json", "Live Sports Only ⚽"),
                         ("ott", "nuvio_ott_collection.json", "OTT Platforms Only"),
                         ("explore", "nuvio_explore_collection.json", "TMDb & Trakt Franchises Only"),
                     ]:
@@ -120,10 +128,14 @@ async def send_start_message(client: Client, message: Message):
         if token_doc and token_doc.get("token"):
             addon_url = f"{base_url}/stremio/{token_doc['token']}/manifest.json"
             nuvio_url = f"{base_url}/stremio/{token_doc['token']}/nuvio-collection.json"
+            nuvio_ott_sports_url = f"{base_url}/stremio/{token_doc['token']}/nuvio-ott-sports-collection.json"
+            nuvio_sports_url = f"{base_url}/stremio/{token_doc['token']}/nuvio-sports-collection.json"
             nuvio_ott_url = f"{base_url}/stremio/{token_doc['token']}/nuvio-ott-collection.json"
             nuvio_explore_url = f"{base_url}/stremio/{token_doc['token']}/nuvio-explore-collection.json"
         else:
             nuvio_url = f"{base_url}/stremio/nuvio-collection.json"
+            nuvio_ott_sports_url = f"{base_url}/stremio/nuvio-ott-sports-collection.json"
+            nuvio_sports_url = f"{base_url}/stremio/nuvio-sports-collection.json"
             nuvio_ott_url = f"{base_url}/stremio/nuvio-ott-collection.json"
             nuvio_explore_url = f"{base_url}/stremio/nuvio-explore-collection.json"
 
@@ -133,7 +145,9 @@ async def send_start_message(client: Client, message: Message):
             '🧩 <b>Addon Manifest URL (Stremio & Nuvio):</b>\n'
             f'<code>{addon_url}</code>\n\n'
             '📱 <b>Nuvio Collection URLs (Optional):</b>\n'
-            f'• <a href="{nuvio_url}">Full Collection</a>\n'
+            f'• <a href="{nuvio_url}">Full Collection (Movies & Series)</a>\n'
+            f'• <a href="{nuvio_ott_sports_url}">OTT Platforms + Live Sports 🏟️</a>\n'
+            f'• <a href="{nuvio_sports_url}">Live Sports Only ⚽</a>\n'
             f'• <a href="{nuvio_ott_url}">OTT Platforms Only</a>\n'
             f'• <a href="{nuvio_explore_url}">TMDb Franchises Only</a>\n\n'
             '• Add the <b>Addon Manifest URL</b> into Stremio or Nuvio under Addons.\n'
@@ -148,6 +162,8 @@ async def send_start_message(client: Client, message: Message):
                 from Backend.fastapi.routes.stremio_routes import build_nuvio_collection_data
                 for mode, fname, label in [
                     ("full", "nuvio_collection.json", "Full Collection (OTT + Franchises)"),
+                    ("full_sports", "nuvio_ott_sports_collection.json", "OTT + Live Sports 🏟️"),
+                    ("sports", "nuvio_sports_collection.json", "Live Sports Only ⚽"),
                     ("ott", "nuvio_ott_collection.json", "OTT Platforms Only"),
                     ("explore", "nuvio_explore_collection.json", "TMDb & Trakt Franchises Only"),
                 ]:

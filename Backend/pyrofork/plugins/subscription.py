@@ -240,11 +240,15 @@ async def admin_review(client: Client, callback_query: CallbackQuery):
             await db.align_token_with_subscription(target_user_id)
             addon_url = f"{SettingsManager.current().base_url}/stremio/{token_doc.get('token')}/manifest.json"
             nuvio_url = f"{SettingsManager.current().base_url}/stremio/{token_doc.get('token')}/nuvio-collection.json"
+            nuvio_ott_sports_url = f"{SettingsManager.current().base_url}/stremio/{token_doc.get('token')}/nuvio-ott-sports-collection.json"
+            nuvio_sports_url = f"{SettingsManager.current().base_url}/stremio/{token_doc.get('token')}/nuvio-sports-collection.json"
             nuvio_ott_url = f"{SettingsManager.current().base_url}/stremio/{token_doc.get('token')}/nuvio-ott-collection.json"
             nuvio_explore_url = f"{SettingsManager.current().base_url}/stremio/{token_doc.get('token')}/nuvio-explore-collection.json"
         except Exception:
             addon_url = None
             nuvio_url = None
+            nuvio_ott_sports_url = None
+            nuvio_sports_url = None
             nuvio_ott_url = None
             nuvio_explore_url = None
 
@@ -269,7 +273,9 @@ async def admin_review(client: Client, callback_query: CallbackQuery):
                 f"\n\n🧩 <b>Addon Manifest URL (Stremio & Nuvio):</b>\n"
                 f"<code>{addon_url}</code>\n\n"
                 f"📱 <b>Nuvio Collection URLs (Optional):</b>\n"
-                f'• <a href="{nuvio_url}">Full Collection</a>\n'
+                f'• <a href="{nuvio_url}">Full Collection (Movies & Series)</a>\n'
+                f'• <a href="{nuvio_ott_sports_url}">OTT Platforms + Live Sports 🏟️</a>\n'
+                f'• <a href="{nuvio_sports_url}">Live Sports Only ⚽</a>\n'
                 f'• <a href="{nuvio_ott_url}">OTT Platforms Only</a>\n'
                 f'• <a href="{nuvio_explore_url}">TMDb Franchises Only</a>\n\n'
                 f"• Add the <b>Addon Manifest URL</b> into Stremio or Nuvio under Addons.\n"
@@ -283,6 +289,8 @@ async def admin_review(client: Client, callback_query: CallbackQuery):
                 from Backend.fastapi.routes.stremio_routes import build_nuvio_collection_data
                 for mode, fname, label in [
                     ("full", "nuvio_collection.json", "Full Collection (OTT + Franchises)"),
+                    ("full_sports", "nuvio_ott_sports_collection.json", "OTT + Live Sports 🏟️"),
+                    ("sports", "nuvio_sports_collection.json", "Live Sports Only ⚽"),
                     ("ott", "nuvio_ott_collection.json", "OTT Platforms Only"),
                     ("explore", "nuvio_explore_collection.json", "TMDb & Trakt Franchises Only"),
                 ]:
