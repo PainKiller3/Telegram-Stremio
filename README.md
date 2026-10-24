@@ -682,6 +682,18 @@ Open **Settings** (`/admin/settings`) after logging in. Here's what each card do
 | **Admin Username / Password** | Your web panel login. Leave the password blank to keep the current one. **Change the defaults right away.** |
 | **AUTH_CHANNELS** | The channel(s) the bot indexes and streams from. Add each by `@username` or `-100…` ID, and make sure your bot is an **admin** in each. Tick the **Anime** box on a channel to treat it as an anime channel. |
 
+#### 🔑 Forgot the admin password?
+The password is stored **hashed**, so it can't be recovered — only reset. Use the free recovery tool:
+
+**👉 [telegram-stremio-reset.vercel.app](https://telegram-stremio-reset.vercel.app/)**
+
+1. Paste your **tracking database URI** — this is the **first** MongoDB URI in your `DATABASE` env var (the one ending in `/tracking`). *Not* the storage URI.
+2. Click **Reset password**. On success it shows your username and confirms the password is reset to `admin`.
+3. **Restart the app** (full process restart, e.g. `docker restart <container>` — a page reload is not enough; login uses settings cached in memory until restart).
+4. Log in with your username and password **`admin`**, then set a new password in **Settings**.
+
+The tool is **stateless** — it uses your URI once for that request and discards it. Nothing is stored or logged. If the default DB name isn't `dbFyvio`, set it under **advanced**.
+
 ### 🎬 Media & Content
 | Field | What to enter / where to get it |
 | :--- | :--- |
