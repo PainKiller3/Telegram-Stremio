@@ -798,7 +798,7 @@ def stream_res_label(stream_name: str) -> str:
 
 #----- Manifest describing the addon's catalogs/resources for this token
 @router.get("/{token}/manifest.json")
-async def get_manifest(token: str, token_data: dict = Depends(verify_token)):
+async def get_manifest(token: str, request: Request, token_data: dict = Depends(verify_token)):
     if SettingsManager.current().hide_catalog:
         resources = ["stream", "subtitles"]
         catalogs = []
@@ -902,17 +902,28 @@ async def get_manifest(token: str, token_data: dict = Depends(verify_token)):
             pass
 
         # Dynamic TMDB-franchise catalogs backed strictly by media available in this DB.
-        try:
-            for group in await _build_library_collection_groups(token_data):
-                catalogs.append({
-                    "type": "movie",
-                    "id": group["catalog_id"],
-                    "name": group["title"],
-                    "extra": [{"name": "skip"}, {"name": "search", "isRequired": False}],
-                    "extraSupported": ["skip", "search"],
-                })
-        except Exception as exc:
-            LOGGER.warning(f"[Library Collections] Could not add dynamic catalogs to manifest: {exc}")
+        # If the client/token is using Nuvio Library Collections, omit them from manifest.json
+        # so they do not show up as duplicate standalone rows in Nuvio's home feed.
+        # Stremio and clients not using collections will continue to receive them.
+        is_nuvio_request = (
+            request.query_params.get("client") == "nuvio"
+            or request.query_params.get("nuvio") in ("1", "true")
+            or "nuvio" in (request.headers.get("user-agent") or "").lower()
+            or bool((token_data.get("config") or {}).get("has_nuvio_collections"))
+        )
+
+        if not is_nuvio_request:
+            try:
+                for group in await _build_library_collection_groups(token_data):
+                    catalogs.append({
+                        "type": "movie",
+                        "id": group["catalog_id"],
+                        "name": group["title"],
+                        "extra": [{"name": "skip"}, {"name": "search", "isRequired": False}],
+                        "extraSupported": ["skip", "search"],
+                    })
+            except Exception as exc:
+                LOGGER.warning(f"[Library Collections] Could not add dynamic catalogs to manifest: {exc}")
 
         try:
             order = await db.get_catalog_order()
@@ -1820,9 +1831,22 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
     return collections
 
 
+async def _mark_token_nuvio_collection_used(token: str, token_data: Optional[dict]):
+    """Automatically record that this token is being used with Nuvio Collections.
+    This prevents duplicate franchise rows from appearing in manifest.json on Nuvio's home feed."""
+    try:
+        conf = (token_data.get("config") if token_data else {}) or {}
+        if not conf.get("has_nuvio_collections"):
+            conf["has_nuvio_collections"] = True
+            await db.set_token_config(token, conf)
+    except Exception as exc:
+        LOGGER.warning(f"[Nuvio Collections] Failed to mark has_nuvio_collections for {token[:8]}: {exc}")
+
+
 #----- Dynamic Nuvio Collection JSON for this token
 @router.get("/{token}/nuvio-collection.json")
 async def get_nuvio_collection(token: str, token_data: dict = Depends(verify_token)):
+    await _mark_token_nuvio_collection_used(token, token_data)
     return await build_nuvio_collection_data(token, "full", token_data)
 
 
@@ -1839,6 +1863,7 @@ async def get_nuvio_explore_collection(token: str, token_data: dict = Depends(ve
 @router.get("/{token}/nuvio-library-collection.json")
 @router.get("/{token}/nuvio-library-collections.json")
 async def get_nuvio_library_collections(token: str, token_data: dict = Depends(verify_token)):
+    await _mark_token_nuvio_collection_used(token, token_data)
     return await build_nuvio_collection_data(token, "library", token_data)
 
 
@@ -1852,6 +1877,7 @@ async def get_nuvio_sports_collection(token: str, token_data: dict = Depends(ver
 @router.get("/{token}/nuvio-collections-sports.json")
 @router.get("/{token}/nuvio-collection-sports.json")
 async def get_nuvio_ott_sports_collection(token: str, token_data: dict = Depends(verify_token)):
+    await _mark_token_nuvio_collection_used(token, token_data)
     return await build_nuvio_collection_data(token, "full_sports", token_data)
 
 
