@@ -1,7 +1,7 @@
 services:
   telegram-stremio:
     build: .
-    container_name: tg_stremio  
+    container_name: tg_stremio
     ports:
       - "8000:8000"
     volumes:
@@ -11,5 +11,19 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "1m"     
-        max-file: "3"      
+        max-size: "1m"
+        max-file: "3"
+
+  # Emby media server co-located alongside Telestream (accessible at http://<VPS_IP>:8096)
+  emby:
+    image: emby/embyserver:latest
+    container_name: embyserver
+    network_mode: host
+    environment:
+      - UID=0
+      - GID=0
+    volumes:
+      - /var/lib/emby:/config
+      - /media/telestream_emby:/media/telestream_emby:ro
+    restart: unless-stopped
+
