@@ -38,6 +38,10 @@ _DEFAULTS: Dict[str, Any] = {
     "webdav_password": "",
     "strm_export_dir": "",
     "strm_default_token": "",
+    "emby_url": "http://localhost:8096",
+    "emby_public_url": "",
+    "emby_api_key": "",
+    "emby_public_signup": False,
     "multi_tokens": [],
     "extra_databases": [],
     "global_search": False,
@@ -243,6 +247,22 @@ class Settings:
     @property
     def strm_default_token(self) -> str:
         return str(self._d.get("strm_default_token") or "").strip()
+
+    @property
+    def emby_url(self) -> str:
+        return str(self._d.get("emby_url") or "http://localhost:8096").rstrip("/")
+
+    @property
+    def emby_public_url(self) -> str:
+        return str(self._d.get("emby_public_url") or "").rstrip("/")
+
+    @property
+    def emby_api_key(self) -> str:
+        return str(self._d.get("emby_api_key") or "").strip()
+
+    @property
+    def emby_public_signup(self) -> bool:
+        return bool(self._d.get("emby_public_signup", False))
 
     @property
     def payment_instructions(self) -> str:

@@ -19,10 +19,10 @@ from Backend.helper.settings_manager import SettingsManager
 from Backend.helper.strm_generator import STRMExporter, resolve_strm_token
 from Backend.logger import LOGGER
 
-router = APIRouter(prefix="/api/strm", tags=["STRM & Emby"])
+router = APIRouter(tags=["STRM & Emby"])
 
 
-@router.get("/status")
+@router.get("/api/strm/status")
 async def strm_status_api(_: bool = Depends(require_auth)):
     settings = SettingsManager.current()
     export_dir = settings.strm_export_dir
@@ -50,7 +50,7 @@ async def strm_status_api(_: bool = Depends(require_auth)):
     }
 
 
-@router.post("/sync")
+@router.post("/api/strm/sync")
 async def strm_sync_api(_: bool = Depends(require_auth)):
     settings = SettingsManager.current()
     export_dir = settings.strm_export_dir
@@ -70,7 +70,7 @@ async def strm_sync_api(_: bool = Depends(require_auth)):
         raise HTTPException(status_code=500, detail=f"STRM sync failed: {str(e)}")
 
 
-@router.get("/export.zip")
+@router.get("/api/strm/export.zip")
 async def strm_export_zip_api(
     token: str = Query(None, description="API token to embed inside the .strm files"),
     include_nfo: bool = Query(True, description="Include companion .nfo metadata files"),
@@ -88,3 +88,109 @@ async def strm_export_zip_api(
     except Exception as e:
         LOGGER.error(f"[STRM] Zip export failed: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to generate STRM zip: {str(e)}")
+
+import aiohttp
+from fastapi.responses import HTMLResponse
+from Backend.fastapi.routes.template_routes import templates
+
+
+@router.get("/signup", response_class=HTMLResponse, tags=["Public Signup"])
+async def public_signup_page(request: Request):
+    """Public registration page for normal users to register for Emby."""
+    settings = SettingsManager.current()
+    if not settings.emby_public_signup:
+        raise HTTPException(status_code=403, detail="Public user signup is currently disabled by administrator.")
+
+    hostname = request.url.hostname or "localhost"
+    emby_external = settings.emby_public_url or f"http://{hostname}:8096"
+    return templates.TemplateResponse(
+        "signup.html",
+        {
+            "request": request,
+            "brand_name": "Telestream",
+            "emby_external_url": emby_external,
+        },
+    )
+
+
+@router.post("/api/signup", tags=["Public Signup"])
+async def public_signup_api(payload: dict, request: Request):
+    """API endpoint to create a restricted non-admin user in Emby."""
+    settings = SettingsManager.current()
+    if not settings.emby_public_signup:
+        raise HTTPException(status_code=403, detail="Public user signup is currently disabled.")
+
+    api_key = settings.emby_api_key
+    if not api_key:
+        raise HTTPException(status_code=500, detail="Emby API key is not configured in Telestream settings.")
+
+    username = str(payload.get("username") or "").strip()
+    password = str(payload.get("password") or "").strip()
+
+    if not username:
+        raise HTTPException(status_code=400, detail="Username is required.")
+    if len(password) < 4:
+        raise HTTPException(status_code=400, detail="Password must be at least 4 characters.")
+
+    emby_base = (settings.emby_url or "http://localhost:8096").rstrip("/")
+
+    # 1. Create User in Emby via REST API: POST /Users/New
+    async with aiohttp.ClientSession() as session:
+        headers = {
+            "X-Emby-Token": api_key,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+        create_url = f"{emby_base}/Users/New"
+        try:
+            async with session.post(create_url, json={"Name": username}, headers=headers, timeout=10) as resp:
+                if resp.status == 400:
+                    err_txt = await resp.text()
+                    raise HTTPException(status_code=400, detail=f"Username may already exist in Emby.")
+                if resp.status not in (200, 204):
+                    err_txt = await resp.text()
+                    LOGGER.error(f"[Emby API] Create user failed {resp.status}: {err_txt}")
+                    raise HTTPException(status_code=resp.status, detail="Failed creating user in Emby.")
+
+                user_doc = await resp.json()
+                user_id = user_doc.get("Id")
+        except asyncio.TimeoutError:
+            raise HTTPException(status_code=504, detail="Emby server timed out.")
+        except Exception as e:
+            if isinstance(e, HTTPException):
+                raise e
+            LOGGER.error(f"[Emby API] Connection failed: {e}")
+            raise HTTPException(status_code=502, detail=f"Could not connect to Emby server: {e}")
+
+        # 2. Set Password: POST /Users/{Id}/Password
+        if user_id and password:
+            pwd_url = f"{emby_base}/Users/{user_id}/Password"
+            try:
+                async with session.post(pwd_url, json={"NewPw": password, "ResetPassword": False}, headers=headers) as presp:
+                    if presp.status not in (200, 204):
+                        LOGGER.warning(f"[Emby API] Could not set user password: {presp.status}")
+            except Exception as pe:
+                LOGGER.warning(f"[Emby API] Password set failed: {pe}")
+
+        # 3. Restrict permissions (Ensure non-admin): POST /Users/{Id}/Policy
+        if user_id:
+            policy_url = f"{emby_base}/Users/{user_id}/Policy"
+            policy = {
+                "IsAdministrator": False,
+                "IsHidden": False,
+                "EnableContentDownloading": False,
+                "EnableUserPreferenceAccess": True,
+            }
+            try:
+                async with session.post(policy_url, json=policy, headers=headers) as pol_resp:
+                    pass
+            except Exception as ple:
+                LOGGER.warning(f"[Emby API] Policy update failed: {ple}")
+
+    hostname = request.url.hostname or "localhost"
+    login_url = settings.emby_public_url or f"http://{hostname}:8096"
+    return {
+        "status": "success",
+        "username": username,
+        "login_url": login_url,
+    }

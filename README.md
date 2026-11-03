@@ -997,6 +997,17 @@ If Emby is running on a different machine or PC:
 * Download the full library archive from your Telestream Web UI or via `GET /api/strm/export.zip`.
 * Extract the folder into your Emby media directory.
 
+#### 👥 Native User Self-Service Signup Page (`/signup`)
+Telestream includes a built-in public registration portal for Emby users:
+1. In Telestream **Settings** → **Emby & Jellyfin (.strm Support)**:
+   * Enter your **Emby API Key** (generated in Emby ⚙️ → **API Keys**).
+   * Check **Enable Public User Signup Page (`/signup`)**.
+2. Give your users the registration link:
+   ```text
+   https://yourdomain.com/signup
+   ```
+3. Users pick their own username and password. Telestream automatically communicates with Emby's API to register them with safe, non-admin permissions!
+
 ---
 
 ## ❤️ Support the project
