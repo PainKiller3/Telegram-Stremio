@@ -244,3 +244,30 @@ class STRMExporter:
                 zf.writestr(rel_path, data)
         buf.seek(0)
         return buf
+
+async def strm_auto_sync_loop(interval_hours: int = 24):
+    """
+    Background worker that runs every `interval_hours` (default: 24h)
+    and automatically syncs the STRM library if an export directory is configured.
+    """
+    # Initial delay on boot to let Telegram clients and DB connections warm up
+    await asyncio.sleep(60)
+
+    while True:
+        try:
+            settings = SettingsManager.current()
+            export_dir = settings.strm_export_dir
+            if export_dir and os.path.isdir(export_dir):
+                LOGGER.info("[STRM Auto-Sync] Running scheduled STRM library sync...")
+                token = await resolve_strm_token()
+                exporter = STRMExporter(token=token, include_nfo=True)
+                res = await exporter.export_to_directory(export_dir)
+                LOGGER.info(
+                    f"[STRM Auto-Sync] Completed: {res.get('strm_count', 0)} streams, "
+                    f"{res.get('nfo_count', 0)} metadata files."
+                )
+        except Exception as e:
+            LOGGER.error(f"[STRM Auto-Sync] Scheduled sync encountered an error: {e}")
+
+        # Wait for the next sync cycle (e.g. 24 hours)
+        await asyncio.sleep(max(1, interval_hours) * 3600)

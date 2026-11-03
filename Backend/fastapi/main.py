@@ -170,6 +170,8 @@ async def _startup():
     asyncio.create_task(decay_client_failures())
     from Backend.helper.version_check import version_check_loop
     asyncio.create_task(version_check_loop())
+    from Backend.helper.strm_generator import strm_auto_sync_loop
+    asyncio.create_task(strm_auto_sync_loop(interval_hours=24))
     # Warm the persistent franchise metadata cache in the background so Library
     # Collections can be ready before the first Nuvio profile request.
     try:
