@@ -36,6 +36,8 @@ _DEFAULTS: Dict[str, Any] = {
     "mediaflow_password": "",
     "webdav_user": "",
     "webdav_password": "",
+    "strm_export_dir": "",
+    "strm_default_token": "",
     "multi_tokens": [],
     "extra_databases": [],
     "global_search": False,
@@ -88,6 +90,8 @@ def _seed_from_env() -> Dict[str, Any]:
         "show_proxy_and_non_proxy_both": Telegram.SHOW_PROXY_AND_NON_PROXY_BOTH,
         "multi_tokens":                 [],
         "extra_databases":              list(Telegram.DATABASE[2:]) if len(Telegram.DATABASE) > 2 else [],
+        "strm_export_dir":              getattr(Telegram, "STRM_EXPORT_DIR", "") or "",
+        "strm_default_token":           "",
     })
     return seed
 
@@ -231,6 +235,14 @@ class Settings:
     @property
     def webdav_password(self) -> str:
         return str(self._d.get("webdav_password") or "")
+
+    @property
+    def strm_export_dir(self) -> str:
+        return str(self._d.get("strm_export_dir") or "").strip()
+
+    @property
+    def strm_default_token(self) -> str:
+        return str(self._d.get("strm_default_token") or "").strip()
 
     @property
     def payment_instructions(self) -> str:
