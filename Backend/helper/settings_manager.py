@@ -39,6 +39,7 @@ _DEFAULTS: Dict[str, Any] = {
     "strm_export_dir": "",
     "strm_default_token": "",
     "emby_url": "http://localhost:8096",
+    "emby_public_url": "",
     "emby_api_key": "",
     "emby_public_signup": False,
     "multi_tokens": [],
@@ -250,6 +251,10 @@ class Settings:
     @property
     def emby_url(self) -> str:
         return str(self._d.get("emby_url") or "http://localhost:8096").rstrip("/")
+
+    @property
+    def emby_public_url(self) -> str:
+        return str(self._d.get("emby_public_url") or "").rstrip("/")
 
     @property
     def emby_api_key(self) -> str:

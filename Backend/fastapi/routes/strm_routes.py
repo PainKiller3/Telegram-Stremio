@@ -19,10 +19,10 @@ from Backend.helper.settings_manager import SettingsManager
 from Backend.helper.strm_generator import STRMExporter, resolve_strm_token
 from Backend.logger import LOGGER
 
-router = APIRouter(prefix="/api/strm", tags=["STRM & Emby"])
+router = APIRouter(tags=["STRM & Emby"])
 
 
-@router.get("/status")
+@router.get("/api/strm/status")
 async def strm_status_api(_: bool = Depends(require_auth)):
     settings = SettingsManager.current()
     export_dir = settings.strm_export_dir
@@ -50,7 +50,7 @@ async def strm_status_api(_: bool = Depends(require_auth)):
     }
 
 
-@router.post("/sync")
+@router.post("/api/strm/sync")
 async def strm_sync_api(_: bool = Depends(require_auth)):
     settings = SettingsManager.current()
     export_dir = settings.strm_export_dir
@@ -70,7 +70,7 @@ async def strm_sync_api(_: bool = Depends(require_auth)):
         raise HTTPException(status_code=500, detail=f"STRM sync failed: {str(e)}")
 
 
-@router.get("/export.zip")
+@router.get("/api/strm/export.zip")
 async def strm_export_zip_api(
     token: str = Query(None, description="API token to embed inside the .strm files"),
     include_nfo: bool = Query(True, description="Include companion .nfo metadata files"),
@@ -102,7 +102,7 @@ async def public_signup_page(request: Request):
         raise HTTPException(status_code=403, detail="Public user signup is currently disabled by administrator.")
 
     hostname = request.url.hostname or "localhost"
-    emby_external = f"http://{hostname}:8096"
+    emby_external = settings.emby_public_url or f"http://{hostname}:8096"
     return templates.TemplateResponse(
         "signup.html",
         {
@@ -188,8 +188,9 @@ async def public_signup_api(payload: dict, request: Request):
                 LOGGER.warning(f"[Emby API] Policy update failed: {ple}")
 
     hostname = request.url.hostname or "localhost"
+    login_url = settings.emby_public_url or f"http://{hostname}:8096"
     return {
         "status": "success",
         "username": username,
-        "login_url": f"http://{hostname}:8096",
+        "login_url": login_url,
     }
