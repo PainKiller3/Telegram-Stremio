@@ -271,3 +271,108 @@ async def strm_auto_sync_loop(interval_hours: int = 24):
 
         # Wait for the next sync cycle (e.g. 24 hours)
         await asyncio.sleep(max(1, interval_hours) * 3600)
+
+async def notify_emby_library_refresh():
+    """Optionally instruct Emby Server to scan its library immediately via REST API."""
+    settings = SettingsManager.current()
+    api_key = settings.emby_api_key
+    if not api_key:
+        return
+    emby_base = (settings.emby_url or "http://localhost:8096").rstrip("/")
+    refresh_url = f"{emby_base}/Library/Refresh"
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession() as session:
+            headers = {"X-Emby-Token": api_key}
+            async with session.post(refresh_url, headers=headers, timeout=5) as resp:
+                if resp.status in (200, 204):
+                    LOGGER.info("[STRM] Triggered Emby library refresh successfully.")
+    except Exception as e:
+        LOGGER.debug(f"[STRM] Emby refresh notification failed (optional): {e}")
+
+
+async def sync_single_media_strm(media_type: str, tmdb_id: int):
+    """
+    Instantly generates the .strm and .nfo files for newly forwarded media
+    and saves them to STRM_EXPORT_DIR immediately, then pings Emby to refresh.
+    """
+    settings = SettingsManager.current()
+    export_dir = settings.strm_export_dir
+    if not export_dir or not os.path.isdir(export_dir):
+        return
+
+    try:
+        location = await db.find_media_doc(media_type, tmdb_id)
+        if not location:
+            return
+        doc, _ = location
+        token = await resolve_strm_token()
+        exporter = STRMExporter(token=token, include_nfo=True)
+
+        items_to_write = []
+
+        if media_type == "movie":
+            qualities = doc.get("telegram") or []
+            qual = pick_best_quality(qualities)
+            if qual and qual.get("id"):
+                m_folder = movie_folder_name(doc)
+                title = doc.get("title_english") or doc.get("title") or "Unknown"
+                year = doc.get("release_year")
+                fname_base = f"{safe_name(title)}" + (f" ({year})" if year else "")
+                ext = quality_ext(qual.get("name") or "")
+
+                strm_url = build_strm_url(qual["id"], f"{fname_base}{ext}", token)
+                items_to_write.append((f"Movies/{m_folder}/{fname_base}.strm", f"{strm_url}\n"))
+                try:
+                    items_to_write.append((f"Movies/{m_folder}/{fname_base}.nfo", movie_nfo(doc)))
+                except Exception:
+                    pass
+
+        elif media_type in ("tv", "series"):
+            seasons = doc.get("seasons") or []
+            s_folder = show_folder_name(doc)
+            show_title = doc.get("title_english") or doc.get("title") or "Unknown"
+            show_short = safe_name(show_title, 60)
+
+            try:
+                items_to_write.append((f"TV Shows/{s_folder}/tvshow.nfo", tvshow_nfo(doc)))
+            except Exception:
+                pass
+
+            for s in seasons:
+                sn = s.get("season_number") or 0
+                season_dir = f"TV Shows/{s_folder}/Season {sn:02d}"
+                try:
+                    items_to_write.append((f"{season_dir}/season.nfo", season_nfo(doc, s)))
+                except Exception:
+                    pass
+
+                for ep in (s.get("episodes") or []):
+                    en = ep.get("episode_number") or 0
+                    qual = pick_best_quality(ep.get("telegram") or [])
+                    if not qual or not qual.get("id"):
+                        continue
+                    ep_title = safe_name(ep.get("title") or f"Episode {en}", 60)
+                    qlabel = safe_name(str(qual.get("quality") or "HD"), 20)
+                    base_ep = f"{show_short} S{sn:02d}E{en:02d} - {ep_title}"
+                    ext = quality_ext(qual.get("name") or "")
+
+                    strm_url = build_strm_url(qual["id"], f"{base_ep} - {qlabel}{ext}", token)
+                    items_to_write.append((f"{season_dir}/{base_ep}.strm", f"{strm_url}\n"))
+                    try:
+                        items_to_write.append((f"{season_dir}/{base_ep}.nfo", episode_nfo(doc, s, ep)))
+                    except Exception:
+                        pass
+
+        for rel_path, content in items_to_write:
+            full_path = os.path.join(export_dir, rel_path.replace("/", os.sep))
+            os.makedirs(os.path.dirname(full_path), exist_ok=True)
+            encoded = content.encode("utf-8") if isinstance(content, str) else content
+            with open(full_path, "wb") as f:
+                f.write(encoded)
+
+        LOGGER.info(f"[STRM] Instant-synced {len(items_to_write)} file(s) for {media_type} (TMDB {tmdb_id})")
+        await notify_emby_library_refresh()
+
+    except Exception as e:
+        LOGGER.error(f"[STRM] Instant sync failed for {media_type} {tmdb_id}: {e}")
