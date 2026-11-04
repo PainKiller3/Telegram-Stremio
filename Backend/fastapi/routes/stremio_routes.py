@@ -7,6 +7,7 @@ from urllib.parse import quote, unquote
 
 import PTN
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from pyrogram.enums import ChatMemberStatus
 from pyrogram.errors import UserNotParticipant
@@ -29,6 +30,7 @@ from Backend.helper.local_collections import (
     ensure_library_collection_index,
     get_cached_movie_collection_index,
     get_tmdb_ids_for_collection,
+    rotate_library_collection_groups,
     tmdb_image_url,
 )
 from Backend.helper.split_files import parse_combined_episodes, combined_name_key
@@ -295,7 +297,7 @@ def _display_library_collection_name(name: Optional[str]) -> str:
     return display
 
 
-async def _build_library_collection_groups(token_data: Optional[dict] = None) -> list[dict]:
+async def _build_library_collection_groups(token_data: Optional[dict] = None, rotate: bool = False, scope_key: str = "global") -> list[dict]:
     """Return franchise groups represented by visible, locally stored movies only."""
     token_data = token_data or {}
     # The first request kicks off a persisted background backfill. Wait briefly for a
@@ -388,6 +390,8 @@ async def _build_library_collection_groups(token_data: Optional[dict] = None) ->
         groups.append(group)
 
     groups.sort(key=lambda group: (str(group.get("title") or "").casefold(), group["collection_id"]))
+    if rotate:
+        return rotate_library_collection_groups(groups, scope_key=scope_key)
     return groups
 
 
@@ -1168,9 +1172,11 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
     catalog_series_map = {}
     auto_key_movies_map = {}
     auto_key_series_map = {}
+    raw_catalogs_list = []
 
     try:
-        custom_catalogs = await db.get_custom_catalogs(slim=True)
+        custom_catalogs = await db.get_custom_catalogs(visible_only=False, slim=False)
+        raw_catalogs_list = custom_catalogs
         for catalog in custom_catalogs:
             # Check visibility and items
             raw_items = catalog.get("items") or []
@@ -1457,8 +1463,53 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             folder_copy["sources"] = sources or f.get("sources")
             folder_copy["catalogSources"] = catalog_sources or f.get("catalogSources")
             cleaned_folders.append(folder_copy)
-    cleaned_folders.sort(key=lambda f: f.get("id") == "68ba6673-3480-4601-980e-4f69862777c3")
-    ott_collection["folders"] = cleaned_folders
+    # Dynamic content-based ranking for Streaming Services folders:
+    # 1. Trending Now is permanently pinned as the first folder.
+    # 2. Remaining streaming service folders are dynamically ordered based on content recently added to DB:
+    #    - Latest indexed content (newest added_at / updated_on)
+    #    - Recent additions count within a rolling 30-day window
+    #    - Available library size (distinct titles)
+    #    - Stable fallback to original configured order
+    catalog_by_cid = {f"custom_{c.get('_id')}": c for c in raw_catalogs_list}
+    now_utc = datetime.utcnow()
+    recent_cutoff = now_utc - timedelta(days=30)
+
+    def _service_activity_key(folder_item: tuple[int, dict]):
+        original_idx, f = folder_item
+        is_trending = (f.get("id") == "68ba6673-3480-4601-980e-4f69862777c3")
+        if is_trending:
+            return (1, datetime.max, 0, 0, -original_idx)
+
+        # Collect distinct titles across all catalogs referenced by this folder
+        distinct_titles: dict[tuple[str, int], datetime] = {}
+        for s in f.get("sources") or []:
+            cid = s.get("catalogId")
+            cat = catalog_by_cid.get(cid)
+            if not cat:
+                continue
+            for it in cat.get("items") or []:
+                if not _token_can_view(*_effective_visibility(cat, it), token_data):
+                    continue
+                tmdb_id = it.get("tmdb_id")
+                if not tmdb_id:
+                    continue
+                mtype = it.get("media_type") or "movie"
+                ts = it.get("updated_on") or it.get("added_at") or datetime.min
+                tkey = (mtype, int(tmdb_id))
+                if tkey not in distinct_titles or ts > distinct_titles[tkey]:
+                    distinct_titles[tkey] = ts
+
+        if not distinct_titles:
+            return (0, datetime.min, 0, 0, -original_idx)
+
+        latest_ts = max(distinct_titles.values())
+        recent_count = sum(1 for ts in distinct_titles.values() if ts >= recent_cutoff)
+        total_count = len(distinct_titles)
+
+        return (0, latest_ts, recent_count, total_count, -original_idx)
+
+    ranked_enumerated = sorted(list(enumerate(cleaned_folders)), key=_service_activity_key, reverse=True)
+    ott_collection["folders"] = [item[1] for item in ranked_enumerated]
 
     explore_collection = {
         "id": "966190a9-3785-4ef0-9f1b-883478bf618c-community",
@@ -1793,7 +1844,7 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
     elif collection_type in {"sports", "sports_only"}:
         return [_sports_collection()]
 
-    library_groups = await _build_library_collection_groups(token_data)
+    library_groups = await _build_library_collection_groups(token_data, rotate=True, scope_key=f"token_{token[:8]}")
     library_folders = [_library_collection_folder(group, addon_id) for group in library_groups]
     library_collection = {
         "id": "local-library-collections",
@@ -1821,38 +1872,56 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
 
 
 #----- Dynamic Nuvio Collection JSON for this token
+def _nuvio_json_response(data: list) -> JSONResponse:
+    """Return collection JSON with cache control headers to enable fresh discovery rotation."""
+    return JSONResponse(
+        content=data,
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        },
+    )
+
+
 @router.get("/{token}/nuvio-collection.json")
 async def get_nuvio_collection(token: str, token_data: dict = Depends(verify_token)):
-    return await build_nuvio_collection_data(token, "full", token_data)
+    data = await build_nuvio_collection_data(token, "full", token_data)
+    return _nuvio_json_response(data)
 
 
 @router.get("/{token}/nuvio-ott-collection.json")
 async def get_nuvio_ott_collection(token: str, token_data: dict = Depends(verify_token)):
-    return await build_nuvio_collection_data(token, "ott", token_data)
+    data = await build_nuvio_collection_data(token, "ott", token_data)
+    return _nuvio_json_response(data)
 
 
 @router.get("/{token}/nuvio-explore-collection.json")
 async def get_nuvio_explore_collection(token: str, token_data: dict = Depends(verify_token)):
-    return await build_nuvio_collection_data(token, "explore", token_data)
+    data = await build_nuvio_collection_data(token, "explore", token_data)
+    return _nuvio_json_response(data)
 
 
 @router.get("/{token}/nuvio-library-collection.json")
 @router.get("/{token}/nuvio-library-collections.json")
 async def get_nuvio_library_collections(token: str, token_data: dict = Depends(verify_token)):
-    return await build_nuvio_collection_data(token, "library", token_data)
+    data = await build_nuvio_collection_data(token, "library", token_data)
+    return _nuvio_json_response(data)
 
 
 @router.get("/{token}/nuvio-sports-collection.json")
 @router.get("/{token}/nuvio-sport-collection.json")
 async def get_nuvio_sports_collection(token: str, token_data: dict = Depends(verify_token)):
-    return await build_nuvio_collection_data(token, "sports", token_data)
+    data = await build_nuvio_collection_data(token, "sports", token_data)
+    return _nuvio_json_response(data)
 
 
 @router.get("/{token}/nuvio-ott-sports-collection.json")
 @router.get("/{token}/nuvio-collections-sports.json")
 @router.get("/{token}/nuvio-collection-sports.json")
 async def get_nuvio_ott_sports_collection(token: str, token_data: dict = Depends(verify_token)):
-    return await build_nuvio_collection_data(token, "full_sports", token_data)
+    data = await build_nuvio_collection_data(token, "full_sports", token_data)
+    return _nuvio_json_response(data)
 
 
 #----- Catalog listing (latest/popular/custom, with genre/search/skip)

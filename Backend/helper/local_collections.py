@@ -7,6 +7,7 @@ Metadata backfill runs asynchronously and persists progress across restarts.
 from __future__ import annotations
 
 import asyncio
+import random
 import time
 from datetime import datetime, timedelta
 from typing import Any, Optional
@@ -293,3 +294,53 @@ async def get_tmdb_ids_for_collection(collection_id: int) -> list[int]:
 def tmdb_image_url(path: Optional[str], size: str = "w500") -> Optional[str]:
     """Public helper used to build collection tile artwork URLs."""
     return _image_url(path, size)
+
+
+# In-memory rotation tracking: collection_id -> exposure score (recent prominent appearances)
+_ROTATION_HISTORY: dict[str, dict[int, float]] = {}
+_ROTATION_LOCK = asyncio.Lock()
+_EXPOSURE_DECAY = 0.85
+_FEATURED_SLOTS = 10
+
+
+def rotate_library_collection_groups(groups: list[dict], scope_key: str = "global") -> list[dict]:
+    """Rotate eligible library collection franchise groups using a shuffle-bag / least-recently-shown strategy.
+
+    - Rotates on every fresh call even if content has not changed.
+    - All collections remain accessible in the returned list.
+    - Franchises with lower recent front-exposure are prioritized for leading slots.
+    - Ties are randomized so the rotation doesn't repeat fixed cycles.
+    - Response ordering is deterministic and stable within this returned list.
+    """
+    if not groups or len(groups) <= 1:
+        return list(groups)
+
+    history = _ROTATION_HISTORY.setdefault(scope_key, {})
+
+    # Decay prior exposure scores so older appearances gradually fade
+    for cid in list(history.keys()):
+        history[cid] = history[cid] * _EXPOSURE_DECAY
+        if history[cid] < 0.01:
+            history.pop(cid, None)
+
+    # Assign a sort priority to each collection:
+    # Lower exposure score = higher priority (comes first).
+    # Add small uniform jitter to break ties and shuffle among similarly exposed collections.
+    scored: list[tuple[float, dict]] = []
+    for g in groups:
+        cid = int(g.get("collection_id") or 0)
+        exp = history.get(cid, 0.0)
+        jitter = random.uniform(-0.25, 0.25)
+        scored.append((exp + jitter, g))
+
+    scored.sort(key=lambda pair: pair[0])
+    rotated = [pair[1] for pair in scored]
+
+    # Increment exposure scores for the leading collections shown in this rotation
+    for rank, g in enumerate(rotated[:_FEATURED_SLOTS]):
+        cid = int(g.get("collection_id") or 0)
+        weight = float(_FEATURED_SLOTS - rank)
+        history[cid] = history.get(cid, 0.0) + weight
+
+    return rotated
+
