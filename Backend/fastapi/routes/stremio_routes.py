@@ -1257,7 +1257,6 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/2774e91b86.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/2774e91b86.webp",
             "catalogSources": [
               {"type": "movie", "addonId": addon_id, "catalogId": "trending_movies"},
@@ -1265,7 +1264,7 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
               {"type": "movie", "addonId": addon_id, "catalogId": "latest_movies"},
               {"type": "series", "addonId": addon_id, "catalogId": "latest_series"}
             ],
-            "focusGifEnabled": True
+            "focusGifEnabled": False
           },
           {
             "id": "folder-8ZBZOMW9",
@@ -1276,14 +1275,13 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/focused/disney-plus.webp",
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/disney-plus.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/04d275e49b.webp",
             "catalogSources": [
               {"type": "movie", "addonId": addon_id, "catalogId": hotstar_movie},
               {"type": "series", "addonId": addon_id, "catalogId": hotstar_series}
             ],
-            "focusGifEnabled": True,
+            "focusGifEnabled": False,
             "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/disney-plus.webp"
           },
           {
@@ -1295,14 +1293,13 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/59916efcd2.webp",
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/netflix.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/73a7509d9f.webp",
             "catalogSources": [
               {"type": "movie", "addonId": addon_id, "catalogId": netflix_movie},
               {"type": "series", "addonId": addon_id, "catalogId": netflix_series}
             ],
-            "focusGifEnabled": True,
+            "focusGifEnabled": False,
             "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/netflix.webp"
           },
           {
@@ -1314,14 +1311,13 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/focused/prime-video.webp",
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/prime-video.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/cover/prime-video.webp",
             "catalogSources": [
               {"type": "movie", "addonId": addon_id, "catalogId": prime_movie},
               {"type": "series", "addonId": addon_id, "catalogId": prime_series}
             ],
-            "focusGifEnabled": True,
+            "focusGifEnabled": False,
             "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/prime-video.webp"
           },
           {
@@ -1333,14 +1329,13 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/291311c88b.webp",
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/apple-tv.webp",
             "coverImageUrl": "https://imkaptain.github.io/nuvio-assets/assets/images/4d8f0a8f.webp",
             "catalogSources": [
               {"type": "movie", "addonId": addon_id, "catalogId": apple_movie},
               {"type": "series", "addonId": addon_id, "catalogId": apple_series}
             ],
-            "focusGifEnabled": True,
+            "focusGifEnabled": False,
             "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/apple-tv.webp"
           },
           {
@@ -1352,14 +1347,13 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/6b439cb84a.webp",
             "titleLogoUrl": "https://imkaptain.github.io/nuvio-assets/assets/images/6e4c10d3.webp",
             "coverImageUrl": "https://imkaptain.github.io/nuvio-assets/assets/images/b59babf1.webp",
             "catalogSources": [
               {"type": "movie", "addonId": addon_id, "catalogId": hbo_movie},
               {"type": "series", "addonId": addon_id, "catalogId": hbo_series}
             ],
-            "focusGifEnabled": True,
+            "focusGifEnabled": False,
             "heroBackdropUrl": "https://raw.githubusercontent.com/bramst0ne/prism-wallpapers/main/collections/providers/1899-hbo-max/backdrops/t2_flat_1080p.jpg"
           },
           {
@@ -1371,14 +1365,13 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/focused/hulu.webp",
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/hulu.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/cover/hulu.webp",
             "catalogSources": [
               {"type": "movie", "addonId": addon_id, "catalogId": hulu_movie},
               {"type": "series", "addonId": addon_id, "catalogId": hulu_series}
             ],
-            "focusGifEnabled": True,
+            "focusGifEnabled": False,
             "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/hulu.webp"
           },
           {
@@ -1390,13 +1383,12 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/739cc2d16c.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/9cfdcd25ba.webp",
             "catalogSources": [
               {"type": "movie", "addonId": addon_id, "catalogId": mx_movie},
               {"type": "series", "addonId": addon_id, "catalogId": mx_series}
             ],
-            "focusGifEnabled": True
+            "focusGifEnabled": False
           },
           {
             "id": "f6409d11-7630-4fa4-b6e6-48774e4df89e",
@@ -1407,13 +1399,12 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/6b309267fc.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/cf8b51931f.webp",
             "catalogSources": [
               {"type": "movie", "addonId": addon_id, "catalogId": sony_movie},
               {"type": "series", "addonId": addon_id, "catalogId": sony_series}
             ],
-            "focusGifEnabled": True
+            "focusGifEnabled": False
           },
           {
             "id": "008c0c7c-cfe1-43f4-9630-8afd72b7cb5f",
@@ -1424,13 +1415,12 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/364ce2abf4.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/364ce2abf4.webp",
             "catalogSources": [
               {"type": "movie", "addonId": addon_id, "catalogId": zee5_movie},
               {"type": "series", "addonId": addon_id, "catalogId": zee5_series}
             ],
-            "focusGifEnabled": True
+            "focusGifEnabled": False
           },
           {
             "id": "cf7a3d79-0cc9-42c5-b460-d2e3b838ecfc",
@@ -1441,14 +1431,13 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/faff458914.webp",
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/crunchyroll.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/f6456696da.webp",
             "catalogSources": [
               {"type": "series", "addonId": addon_id, "catalogId": crunchyroll_series},
               {"type": "movie", "addonId": addon_id, "catalogId": crunchyroll_movie}
             ],
-            "focusGifEnabled": True,
+            "focusGifEnabled": False,
             "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/crunchyroll.webp"
           }
         ],
@@ -1529,13 +1518,12 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/8d7391d9c2.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/e0a263395d.webp",
             "catalogSources": [
               {"type": "movie", "addonId": addon_id, "catalogId": bollywood_movie},
               {"type": "series", "addonId": addon_id, "catalogId": bollywood_series}
             ],
-            "focusGifEnabled": True
+            "focusGifEnabled": False
           },
           {
             "id": "5069a848-f76f-4c68-ba6b-142d86a24603",
@@ -1579,10 +1567,9 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/98803eb245.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/9c2a71d1f7.webp",
             "catalogSources": [],
-            "focusGifEnabled": True
+            "focusGifEnabled": False
           },
           {
             "id": "74f27ef0-5e73-40e2-a189-63d951dbf792",
@@ -1593,10 +1580,9 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/7da625bb85.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/7da625bb85.webp",
             "catalogSources": [],
-            "focusGifEnabled": True
+            "focusGifEnabled": False
           },
           {
             "id": "folder-516b0b3d",
@@ -1606,7 +1592,6 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/7098025963.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/9caca95ded.webp",
             "catalogSources": [],
             "focusGifEnabled": False
@@ -1624,7 +1609,6 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/5a9a039075.webp",
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/3b0c581d42.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/3a16c993c3.webp",
             "catalogSources": [],
@@ -1642,11 +1626,10 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/761930c268.webp",
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/ce59bd8728.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/07e339efe0.webp",
             "catalogSources": [],
-            "focusGifEnabled": True,
+            "focusGifEnabled": False,
             "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/07e339efe0.webp"
           },
           {
@@ -1658,7 +1641,6 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/7630f2e4da.webp",
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/ea85e73a82.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/db9c50b0bb.webp",
             "catalogSources": [],
@@ -1673,10 +1655,9 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/19d8cf3288.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/12d0a0fff2.webp",
             "catalogSources": [],
-            "focusGifEnabled": True
+            "focusGifEnabled": False
           },
           {
             "id": "3b979d6d-2a1b-4cea-b7c7-a83d39ceb2ea",
@@ -1687,7 +1668,6 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/cc4d00d1ac.webp",
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/a74590c7b2.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/0ee9b1188e.webp",
             "catalogSources": [],
@@ -1702,11 +1682,10 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/02f99db3e1.webp",
             "titleLogoUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/fd29838f20.webp",
             "coverImageUrl": "https://i.postimg.cc/JnVNH8M5/882cf7a8-9aa6-4673-81c1-d3ed7a859e95.jpg",
             "catalogSources": [],
-            "focusGifEnabled": True,
+            "focusGifEnabled": False,
             "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/1d4d792e5f.webp"
           },
           {
@@ -1717,10 +1696,9 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/d14037ad4b.webp",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/63987b738d.webp",
             "catalogSources": [],
-            "focusGifEnabled": True
+            "focusGifEnabled": False
           },
           {
             "id": "folder-08ic2wbn",
@@ -1828,11 +1806,10 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
             ],
             "hideTitle": False,
             "tileShape": "landscape",
-            "focusGifUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/82cc501318.webp",
             "titleLogoUrl": "https://raw.githubusercontent.com/ImKaptain/nuvio-art/main/art/anime/discover-anime/discover-anime-logo.png",
             "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/19a76f435c.webp",
             "catalogSources": [],
-            "focusGifEnabled": True,
+            "focusGifEnabled": False,
             "heroBackdropUrl": "https://raw.githubusercontent.com/ImKaptain/nuvio-art/main/art/anime/discover-anime/discover-anime-backdrop.jpg"
           }
         ],

@@ -38,8 +38,7 @@
         ],
         "hideTitle": false,
         "tileShape": "landscape",
-        "focusGifUrl": "https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUydnAzNGpkNTljNG9iOXR4dTE3cHA4djR3Y3ZoN3B5czQxaHlkYXk3cSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/SIkWDYx30MwcAkz0CQ/giphy.gif",
-        "coverImageUrl": "https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUydnAzNGpkNTljNG9iOXR4dTE3cHA4djR3Y3ZoN3B5czQxaHlkYXk3cSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/SIkWDYx30MwcAkz0CQ/giphy.gif",
+        "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/2774e91b86.webp",
         "catalogSources": [
           {
             "type": "movie",
@@ -62,7 +61,7 @@
             "catalogId": "latest_series"
           }
         ],
-        "focusGifEnabled": true
+        "focusGifEnabled": false
       },
       {
         "id": "folder-8ZBZOMW9",
@@ -83,9 +82,8 @@
         ],
         "hideTitle": false,
         "tileShape": "landscape",
-        "focusGifUrl": "https://www.image2url.com/r2/default/gifs/1788340139972-41f08d14-1898-4d4c-b0d9-c8922ffdf0c1.gif",
         "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/disney-plus.webp",
-        "coverImageUrl": "https://files.catbox.moe/miit0l.jpg",
+        "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/04d275e49b.webp",
         "catalogSources": [
           {
             "type": "movie",
@@ -98,7 +96,7 @@
             "catalogId": "latest_series"
           }
         ],
-        "focusGifEnabled": true,
+        "focusGifEnabled": false,
         "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/disney-plus.webp"
       },
       {
@@ -120,9 +118,8 @@
         ],
         "hideTitle": false,
         "tileShape": "landscape",
-        "focusGifUrl": "https://i.pinimg.com/originals/bb/74/04/bb74046420c4c992b8cabc6e667abe40.gif",
         "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/netflix.webp",
-        "coverImageUrl": "https://i.pinimg.com/1200x/64/c0/94/64c094dfadb3a3e2ba7ad1b86afe04d8.jpg",
+        "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/73a7509d9f.webp",
         "catalogSources": [
           {
             "type": "movie",
@@ -135,7 +132,7 @@
             "catalogId": "latest_series"
           }
         ],
-        "focusGifEnabled": true,
+        "focusGifEnabled": false,
         "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/netflix.webp"
       },
       {
@@ -157,7 +154,6 @@
         ],
         "hideTitle": false,
         "tileShape": "landscape",
-        "focusGifUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/focused/prime-video.webp",
         "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/prime-video.webp",
         "coverImageUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/cover/prime-video.webp",
         "catalogSources": [
@@ -172,7 +168,7 @@
             "catalogId": "latest_series"
           }
         ],
-        "focusGifEnabled": true,
+        "focusGifEnabled": false,
         "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/prime-video.webp"
       },
       {
@@ -194,7 +190,6 @@
         ],
         "hideTitle": false,
         "tileShape": "landscape",
-        "focusGifUrl": "https://64.media.tumblr.com/d717319220a7d26bdaa88e72f6f76889/d9a7a808f588d8f4-63/s500x750/959b0ca57f53153b2ca9adaf414859e45e3734e6.gifv",
         "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/apple-tv.webp",
         "coverImageUrl": "https://imkaptain.github.io/nuvio-assets/assets/images/4d8f0a8f.webp",
         "catalogSources": [
@@ -209,7 +204,7 @@
             "catalogId": "latest_series"
           }
         ],
-        "focusGifEnabled": true,
+        "focusGifEnabled": false,
         "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/apple-tv.webp"
       },
       {
@@ -231,7 +226,6 @@
         ],
         "hideTitle": false,
         "tileShape": "landscape",
-        "focusGifUrl": "https://64.media.tumblr.com/cca7a86d443a0bc88536a2ad6ce72aec/b495f88d5c1df470-a2/s640x960/4cb9b614191d17d02c946b4ca59548cd333c06fd.gifv",
         "titleLogoUrl": "https://imkaptain.github.io/nuvio-assets/assets/images/6e4c10d3.webp",
         "coverImageUrl": "https://imkaptain.github.io/nuvio-assets/assets/images/b59babf1.webp",
         "catalogSources": [
@@ -246,7 +240,7 @@
             "catalogId": "latest_series"
           }
         ],
-        "focusGifEnabled": true,
+        "focusGifEnabled": false,
         "heroBackdropUrl": "https://raw.githubusercontent.com/bramst0ne/prism-wallpapers/main/collections/providers/1899-hbo-max/backdrops/t2_flat_1080p.jpg"
       },
       {
@@ -268,7 +262,6 @@
         ],
         "hideTitle": false,
         "tileShape": "landscape",
-        "focusGifUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/focused/hulu.webp",
         "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/hulu.webp",
         "coverImageUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/cover/hulu.webp",
         "catalogSources": [
@@ -283,7 +276,7 @@
             "catalogId": "latest_series"
           }
         ],
-        "focusGifEnabled": true,
+        "focusGifEnabled": false,
         "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/hulu.webp"
       },
       {
@@ -305,8 +298,7 @@
         ],
         "hideTitle": false,
         "tileShape": "landscape",
-        "focusGifUrl": "https://cdn.dribbble.com/userupload/35341158/file/original-4a4c6bc62f2b6f688838c03d48b6ff14.gif",
-        "coverImageUrl": "https://files.catbox.moe/ao7q5g.jpg",
+        "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/9cfdcd25ba.webp",
         "catalogSources": [
           {
             "type": "movie",
@@ -319,7 +311,7 @@
             "catalogId": "latest_series"
           }
         ],
-        "focusGifEnabled": true
+        "focusGifEnabled": false
       },
       {
         "id": "f6409d11-7630-4fa4-b6e6-48774e4df89e",
@@ -340,8 +332,7 @@
         ],
         "hideTitle": false,
         "tileShape": "landscape",
-        "focusGifUrl": "https://media2.giphy.com/media/v1.Y2lkPTZjMDliOTUyNm9wamYzbjhpNGc5NzJyOG03a2J5ZjZ0bm41Znk2ZnowZ2R6YTZ2OSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/XAV5uY3DG25L4XDZC2/giphy.gif",
-        "coverImageUrl": "https://pngup.com/iwMx/AISelect_20260901_173153_Samsung%20Browser.jpg",
+        "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/cf8b51931f.webp",
         "catalogSources": [
           {
             "type": "movie",
@@ -354,7 +345,7 @@
             "catalogId": "latest_series"
           }
         ],
-        "focusGifEnabled": true
+        "focusGifEnabled": false
       },
       {
         "id": "008c0c7c-cfe1-43f4-9630-8afd72b7cb5f",
@@ -375,8 +366,7 @@
         ],
         "hideTitle": false,
         "tileShape": "landscape",
-        "focusGifUrl": "https://www.image2url.com/r2/default/gifs/1776556708568-46cb2c2a-86ac-4dfd-b515-f4f4941f76b3.gif",
-        "coverImageUrl": "https://i.postimg.cc/9QCxx1G1/IMG-2454.jpg",
+        "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/364ce2abf4.webp",
         "catalogSources": [
           {
             "type": "movie",
@@ -389,7 +379,7 @@
             "catalogId": "latest_series"
           }
         ],
-        "focusGifEnabled": true
+        "focusGifEnabled": false
       },
       {
         "id": "folder-W8L5Z9Y8",
@@ -410,9 +400,8 @@
         ],
         "hideTitle": false,
         "tileShape": "landscape",
-        "focusGifUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/focused/crunchyroll.webp",
         "titleLogoUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/title/crunchyroll.webp",
-        "coverImageUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/cover/crunchyroll.webp",
+        "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/f6456696da.webp",
         "catalogSources": [
           {
             "type": "movie",
@@ -425,7 +414,7 @@
             "catalogId": "latest_series"
           }
         ],
-        "focusGifEnabled": true,
+        "focusGifEnabled": false,
         "heroBackdropUrl": "https://cdn.jsdelivr.net/gh/luckynumb3rs/stremio-perfect-setup/collections/streaming/backdrop/crunchyroll.webp"
       }
     ]
@@ -457,9 +446,8 @@
         ],
         "hideTitle": false,
         "tileShape": "landscape",
-        "focusGifUrl": "https://i.pinimg.com/originals/f3/d9/80/f3d9804bba265cb6f4bc1e2cb039d949.gif",
         "titleLogoUrl": "https://raw.githubusercontent.com/ImKaptain/nuvio-art/main/art/regions/discover-india/discover-india-logo.png",
-        "coverImageUrl": "https://imkaptain.github.io/nuvio-assets/assets/images/6df259fe.webp",
+        "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/e0a263395d.webp",
         "catalogSources": [
           {
             "type": "movie",
@@ -472,7 +460,7 @@
             "catalogId": "latest_series"
           }
         ],
-        "focusGifEnabled": true,
+        "focusGifEnabled": false,
         "heroBackdropUrl": "https://raw.githubusercontent.com/ImKaptain/nuvio-art/main/art/regions/discover-india/discover-india-backdrop.jpg"
       },
       {
@@ -494,9 +482,8 @@
         ],
         "hideTitle": false,
         "tileShape": "landscape",
-        "focusGifUrl": "https://i.postimg.cc/KYhBq15R/VID-20260417-220322.gif",
         "titleLogoUrl": "https://raw.githubusercontent.com/ImKaptain/nuvio-art/main/art/anime/discover-anime/discover-anime-logo.png",
-        "coverImageUrl": "https://i.postimg.cc/nLSgj8fw/Anime-Logo-PNG-HD-Image(1).png",
+        "coverImageUrl": "https://cdn.jsdelivr.net/gh/weebzone/Telegram-Stremio@master/assets/nuvio/19a76f435c.webp",
         "catalogSources": [
           {
             "type": "movie",
@@ -509,7 +496,7 @@
             "catalogId": "latest_series"
           }
         ],
-        "focusGifEnabled": true,
+        "focusGifEnabled": false,
         "heroBackdropUrl": "https://raw.githubusercontent.com/ImKaptain/nuvio-art/main/art/anime/discover-anime/discover-anime-backdrop.jpg"
       }
     ]
