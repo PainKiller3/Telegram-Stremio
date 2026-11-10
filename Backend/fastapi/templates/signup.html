@@ -104,6 +104,50 @@
         }
         .msg-box.error { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; display: block; }
         .msg-box.success { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); color: #4ade80; display: block; }
+        .success-card {
+            text-align: center;
+            padding: 1.5rem 0.5rem;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .success-card .check-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 4rem;
+            height: 4rem;
+            border-radius: 9999px;
+            background: rgba(34,197,94,0.15);
+            color: #4ade80;
+            font-size: 2rem;
+            margin-bottom: 1.25rem;
+            border: 2px solid rgba(34,197,94,0.4);
+        }
+        .success-card h2 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #f8fafc;
+            margin-bottom: 0.5rem;
+        }
+        .success-card p {
+            font-size: 0.92rem;
+            color: var(--text-sec);
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        .success-card .countdown-badge {
+            display: inline-block;
+            background: rgba(245,158,11,0.15);
+            color: #f59e0b;
+            font-weight: 700;
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            margin-bottom: 1.25rem;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
         .footer-links { text-align: center; margin-top: 1.5rem; font-size: 0.82rem; color: var(--text-sec); }
         .footer-links a { color: var(--primary); text-decoration: none; font-weight: 600; }
         .footer-links a:hover { text-decoration: underline; }
@@ -119,6 +163,18 @@
     </div>
 
     <div id="msg" class="msg-box"></div>
+
+    <div id="success-view" class="success-card" style="display:none;">
+        <div class="check-icon"><i class="fa-solid fa-check"></i></div>
+        <h2>Welcome to Emby!</h2>
+        <p>Your streaming account has been created successfully.</p>
+        <div class="countdown-badge">
+            <i class="fa-solid fa-clock"></i> Redirecting in <span id="redirect-timer">3</span>s...
+        </div>
+        <a id="direct-login-btn" href="#" class="btn-submit" style="text-decoration:none;">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> Open Emby Player Now
+        </a>
+    </div>
 
     <form id="signup-form" onsubmit="handleSignup(event)">
         <div class="form-group">
@@ -179,19 +235,43 @@ async function handleSignup(e) {
         });
         const data = await res.json();
         if (res.ok) {
-            msg.className = 'msg-box success';
-            msg.innerHTML = `Account created successfully!<br><a href="${data.login_url}" style="color:#4ade80;text-decoration:underline;font-weight:700">Click here to launch Emby and log in</a>`;
-            document.getElementById('signup-form').reset();
+            // Hide the signup form and footer link
+            document.getElementById('signup-form').style.display = 'none';
+            const footerEl = document.querySelector('.footer-links');
+            if (footerEl) footerEl.style.display = 'none';
+
+            // Show success screen
+            const successView = document.getElementById('success-view');
+            const directBtn = document.getElementById('direct-login-btn');
+            const timerEl = document.getElementById('redirect-timer');
+            const targetUrl = data.login_url || "{{ emby_external_url or 'http://' + request.url.hostname + ':8096' }}";
+
+            directBtn.href = targetUrl;
+            successView.style.display = 'block';
+
+            // 3-second countdown redirect
+            let countdown = 3;
+            timerEl.textContent = countdown;
+            const interval = setInterval(() => {
+                countdown -= 1;
+                if (countdown > 0) {
+                    timerEl.textContent = countdown;
+                } else {
+                    clearInterval(interval);
+                    window.location.href = targetUrl;
+                }
+            }, 1000);
         } else {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Sign Up';
             msg.className = 'msg-box error';
             msg.textContent = data.detail || 'Failed to create account.';
         }
     } catch (err) {
-        msg.className = 'msg-box error';
-        msg.textContent = 'Network error. Please try again.';
-    } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Sign Up';
+        msg.className = 'msg-box error';
+        msg.textContent = 'Network error. Please try again.';
     }
 }
 </script>
