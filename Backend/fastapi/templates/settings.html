@@ -1169,11 +1169,11 @@ async function syncStrmLibrary(btn) {
     
     <!-- ── WebDAV ──────────────────────────────────────────────────────── -->
     
-    <!-- ── Emby / STRM Support ── -->
+    <!-- ── Jellyfin & Emby / STRM Support ── -->
     <div class="settings-card">
-        <h2><i class="fa-solid fa-play-circle"></i> Emby & Jellyfin (.strm Support)</h2>
+        <h2><i class="fa-solid fa-play-circle"></i> Jellyfin & Emby (.strm Support)</h2>
         <p style="font-size:0.82rem;color:var(--text-sec);margin-bottom:1rem">
-            Generate <code>.strm</code> and <code>.nfo</code> files for direct Emby, Jellyfin, or Kodi playback without storing any media locally.
+            Generate <code>.strm</code> and <code>.nfo</code> files for direct Jellyfin, Emby, or Kodi playback without storing any media locally.
         </p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4" style="margin-bottom:1rem">
@@ -1181,10 +1181,10 @@ async function syncStrmLibrary(btn) {
                 <label class="s-label" for="strm_export_dir">Export Directory (VPS Local Disk)</label>
                 <input type="text" id="strm_export_dir" class="s-input"
                     value="{{ settings.strm_export_dir | default('', true) }}"
-                    placeholder="e.g. /data/emby_library or C:\\emby_media"
+                    placeholder="e.g. /media/telestream_media or /data/jellyfin_library"
                     autocomplete="off" spellcheck="false">
                 <p style="font-size:0.75rem;color:var(--text-sec);margin-top:0.35rem">
-                    Target folder on your server where Emby library points.
+                    Target folder on your server where Jellyfin / Emby library points.
                 </p>
             </div>
             <div>
@@ -1202,30 +1202,30 @@ async function syncStrmLibrary(btn) {
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4" style="margin-bottom:1rem">
             <div>
-                <label class="s-label" for="emby_public_url">Emby Public Domain</label>
+                <label class="s-label" for="emby_public_url">Media Server Public Domain</label>
                 <input type="text" id="emby_public_url" class="s-input"
                     value="{{ settings.emby_public_url | default('', true) }}"
-                    placeholder="e.g. https://embystremio3.duckdns.org"
+                    placeholder="e.g. https://jellyfin.duckdns.org"
                     autocomplete="off" spellcheck="false">
                 <p style="font-size:0.75rem;color:var(--text-sec);margin-top:0.35rem">
                     Where users watch. Used on the signup success screen.
                 </p>
             </div>
             <div>
-                <label class="s-label" for="emby_url">Emby Server Internal URL</label>
+                <label class="s-label" for="emby_url">Server Internal URL</label>
                 <input type="text" id="emby_url" class="s-input"
                     value="{{ settings.emby_url | default('http://localhost:8096', true) }}"
-                    placeholder="http://localhost:8096"
+                    placeholder="http://localhost:8096 or domain"
                     autocomplete="off" spellcheck="false">
                 <p style="font-size:0.75rem;color:var(--text-sec);margin-top:0.35rem">
-                    Local URL where Telestream talks to Emby API.
+                    Local URL where Telestream talks to Jellyfin/Emby API.
                 </p>
             </div>
             <div>
-                <label class="s-label" for="emby_api_key">Emby API Key</label>
+                <label class="s-label" for="emby_api_key">API Key</label>
                 <input type="password" id="emby_api_key" class="s-input"
                     value="{{ settings.emby_api_key | default('', true) }}"
-                    placeholder="Emby ⚙️ -> API Keys"
+                    placeholder="Dashboard ⚙️ -> API Keys"
                     autocomplete="off" spellcheck="false">
                 <p style="font-size:0.75rem;color:var(--text-sec);margin-top:0.35rem">
                     Used to create non-admin accounts at <code>/signup</code>.
@@ -1240,7 +1240,7 @@ async function syncStrmLibrary(btn) {
                 <span style="font-size:0.88rem;font-weight:700">Enable Public User Signup Page (<code>/signup</code>)</span>
             </label>
             <p style="font-size:0.75rem;color:var(--text-sec);margin-top:0.25rem;margin-left:1.7rem">
-                Allows normal users to visit <code>https://yourdomain.com/signup</code> to register their own restricted Emby accounts.
+                Allows normal users to visit <code>https://yourdomain.com/signup</code> to register their own restricted streaming accounts.
             </p>
         </div>
 

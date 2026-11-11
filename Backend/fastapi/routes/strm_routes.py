@@ -134,10 +134,12 @@ async def public_signup_api(payload: dict, request: Request):
 
     emby_base = (settings.emby_url or "http://localhost:8096").rstrip("/")
 
-    # 1. Create User in Emby via REST API: POST /Users/New
+    # 1. Create User in Jellyfin / Emby via REST API: POST /Users/New
+    # Supports both X-Emby-Token and MediaBrowser token auth headers used by Jellyfin
     async with aiohttp.ClientSession() as session:
         headers = {
             "X-Emby-Token": api_key,
+            "Authorization": f'MediaBrowser Token="{api_key}"',
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
@@ -146,21 +148,21 @@ async def public_signup_api(payload: dict, request: Request):
             async with session.post(create_url, json={"Name": username}, headers=headers, timeout=10) as resp:
                 if resp.status == 400:
                     err_txt = await resp.text()
-                    raise HTTPException(status_code=400, detail=f"Username may already exist in Emby.")
+                    raise HTTPException(status_code=400, detail="Username may already exist in Jellyfin/Emby.")
                 if resp.status not in (200, 204):
                     err_txt = await resp.text()
-                    LOGGER.error(f"[Emby API] Create user failed {resp.status}: {err_txt}")
-                    raise HTTPException(status_code=resp.status, detail="Failed creating user in Emby.")
+                    LOGGER.error(f"[Jellyfin/Emby API] Create user failed {resp.status}: {err_txt}")
+                    raise HTTPException(status_code=resp.status, detail="Failed creating user in Jellyfin/Emby.")
 
                 user_doc = await resp.json()
                 user_id = user_doc.get("Id")
         except asyncio.TimeoutError:
-            raise HTTPException(status_code=504, detail="Emby server timed out.")
+            raise HTTPException(status_code=504, detail="Media server timed out.")
         except Exception as e:
             if isinstance(e, HTTPException):
                 raise e
-            LOGGER.error(f"[Emby API] Connection failed: {e}")
-            raise HTTPException(status_code=502, detail=f"Could not connect to Emby server: {e}")
+            LOGGER.error(f"[Jellyfin/Emby API] Connection failed: {e}")
+            raise HTTPException(status_code=502, detail=f"Could not connect to Jellyfin/Emby server: {e}")
 
         # 2. Set Password: POST /Users/{Id}/Password
         if user_id and password:

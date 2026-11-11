@@ -6,7 +6,7 @@ services:
       - "8000:8000"
     volumes:
       - ./config.env:/app/config.env
-      - /media/telestream_emby:/media/telestream_emby
+      - /media/telestream_media:/media/telestream_media
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -14,15 +14,16 @@ services:
         max-size: "1m"     
         max-file: "3"
 
-  # Emby media server co-located alongside Telestream (accessible at http://<VPS_IP>:8096)
-  emby:
-    image: emby/embyserver:latest
-    container_name: embyserver
+  # Jellyfin media server co-located alongside Telestream (accessible at http://<VPS_IP>:8096)
+  # 100% Free & Open-Source alternative to Emby with unpaywalled Android/iOS/TV playback
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
     network_mode: host
     environment:
-      - UID=0
-      - GID=0
+      - JELLYFIN_PublishedServerUrl=http://localhost:8096
     volumes:
-      - /var/lib/emby:/config
-      - /media/telestream_emby:/media/telestream_emby:ro
+      - /var/lib/jellyfin/config:/config
+      - /var/lib/jellyfin/cache:/cache
+      - /media/telestream_media:/media/telestream_media:ro
     restart: unless-stopped

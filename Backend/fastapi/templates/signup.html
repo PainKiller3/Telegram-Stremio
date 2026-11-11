@@ -159,20 +159,20 @@
     <div class="header">
         <div class="icon"><i class="fa-solid fa-play"></i></div>
         <h1>Create Account</h1>
-        <p>Sign up to watch movies and series on Emby</p>
+        <p>Sign up to watch movies and series on Jellyfin / Emby</p>
     </div>
 
     <div id="msg" class="msg-box"></div>
 
     <div id="success-view" class="success-card" style="display:none;">
         <div class="check-icon"><i class="fa-solid fa-check"></i></div>
-        <h2>Welcome to Emby!</h2>
-        <p>Your streaming account has been created successfully.</p>
+        <h2>Welcome to Your Streaming Library!</h2>
+        <p>Your account has been created successfully.</p>
         <div class="countdown-badge">
             <i class="fa-solid fa-clock"></i> Redirecting in <span id="redirect-timer">3</span>s...
         </div>
         <a id="direct-login-btn" href="#" class="btn-submit" style="text-decoration:none;">
-            <i class="fa-solid fa-arrow-right-to-bracket"></i> Open Emby Player Now
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> Open Media Player Now
         </a>
     </div>
 
@@ -198,7 +198,7 @@
     </form>
 
     <div class="footer-links">
-        Already have an account? <a href="{{ emby_external_url or 'http://' + request.url.hostname + ':8096' }}" target="_blank">Open Emby Player &rarr;</a>
+        Already have an account? <a href="{{ emby_external_url or 'http://' + request.url.hostname + ':8096' }}" target="_blank">Open Media Player &rarr;</a>
     </div>
 </div>
 
