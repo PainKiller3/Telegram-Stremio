@@ -15,6 +15,8 @@ import httpx
 
 from Backend import __version__, db
 from Backend.helper.database import META_PROJECTION
+from Backend.helper.auto_catalog import catalog_sort_key
+from Backend.helper.bounded import BoundedDict
 from Backend.config import Telegram
 from Backend.helper.analytics import client_ip_from, record_client
 from Backend.fastapi.security.tokens import verify_token
@@ -112,20 +114,30 @@ async def _external_meta_for_id(id: str, parsed: dict, media_type: str) -> Optio
             videos = []
             if not is_movie:
                 seasons = getattr(item, "seasons", None) or []
-                yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
+                last = getattr(item, "last_episode_to_air", None)
+                last_aired = (
+                    (getattr(last, "season_number", 0) or 0, getattr(last, "episode_number", 0) or 0)
+                    if last else None
+                )
                 for s in seasons:
                     s_num = getattr(s, "season_number", 0)
                     if s_num == 0:
                         continue
+                    air = getattr(s, "air_date", None)
+                    released = f"{str(air)[:10]}T00:00:00.000Z" if air else None
                     ep_count = getattr(s, "episode_count", 0) or 0
                     for ep in range(1, ep_count + 1):
-                        videos.append({
+                        if last_aired and (s_num, ep) > last_aired:
+                            break
+                        video = {
                             "id": f"{meta_id}:{s_num}:{ep}",
                             "title": f"Episode {ep}",
                             "season": s_num,
                             "episode": ep,
-                            "released": yesterday,
-                        })
+                        }
+                        if released:
+                            video["released"] = released
+                        videos.append(video)
 
             return {
                 "id": meta_id,
@@ -173,6 +185,21 @@ async def _external_meta_for_id(id: str, parsed: dict, media_type: str) -> Optio
     except Exception as exc:
         LOGGER.warning(f"[EXTERNAL META] Failed to resolve fallback meta for {id}: {exc}")
     return None
+
+_EXTERNAL_META_CACHE = BoundedDict(500)
+_EXTERNAL_META_TTL = 6 * 3600
+
+
+async def _cached_external_meta(id: str, parsed: dict, media_type: str) -> Optional[dict]:
+    key = (id, media_type)
+    hit = _EXTERNAL_META_CACHE.get(key)
+    if hit and time.time() - hit[0] < _EXTERNAL_META_TTL:
+        return hit[1]
+    meta = await _external_meta_for_id(id, parsed, media_type)
+    if meta:
+        _EXTERNAL_META_CACHE[key] = (time.time(), meta)
+    return meta
+
 
 async def _request_title_for_id(id: str, parsed: dict, media_type: str, media_details: Optional[dict] = None) -> str:
     """Return a clean title for the public request page."""
@@ -1585,6 +1612,7 @@ async def get_nuvio_ott_collection(token: str, token_data: dict = Depends(verify
     return await build_nuvio_collection_data(token, "ott", token_data)
 
 
+@router.get("/{token}/nuvio-explore-collection.json")
 @router.get("/{token}/nuvio-franchises-collection.json")
 async def get_nuvio_franchises_collection(token: str, token_data: dict = Depends(verify_token)):
     return await build_nuvio_collection_data(token, "franchises", token_data)
@@ -1637,7 +1665,7 @@ async def get_catalog(token: str, media_type: str, id: str, extra: Optional[str]
                 if it.get("media_type") == db_media_type
                 and _token_can_view(*_effective_visibility(catalog, it), token_data)
             ]
-            visible_items.sort(key=lambda it: it.get("updated_on") or it.get("added_at") or datetime.min, reverse=True)
+            visible_items.sort(key=catalog_sort_key, reverse=True)
             if search_query:
                 ids = [int(it["tmdb_id"]) for it in visible_items if it.get("tmdb_id") is not None]
                 found = await db.search_documents(
@@ -1735,7 +1763,7 @@ async def get_meta(token: str, media_type: str, id: str, token_data: dict = Depe
         projection={"telegram": 0, "seasons.episodes.telegram": 0}
     )
     if not media:
-        fallback_meta = await _external_meta_for_id(id, parsed, media_type)
+        fallback_meta = await _cached_external_meta(id, parsed, media_type)
         return {"meta": fallback_meta or {}}
 
     if not _token_can_view(media.get("visibility") or "public", media.get("allowed_tokens") or [], token_data):
@@ -1825,7 +1853,7 @@ async def get_meta(token: str, media_type: str, id: str, token_data: dict = Depe
                     "thumbnail": _abs_media_url(
                         episode.get("episode_backdrop") or episode.get("thumbnail")
                     ) or "https://raw.githubusercontent.com/weebzone/Colab-Tools/refs/heads/main/no_episode_backdrop.png",
-                    "imdb_id": episode.get("imdb_id") or media.get("imdb_id") or (episode_id if parsed.get("is_tmdb") else (id if not parsed["is_kitsu"] else "")),
+                    "imdb_id": episode.get("imdb_id") or media.get("imdb_id") or ("" if parsed.get("is_tmdb") or parsed["is_kitsu"] else id),
                 })
         meta_obj["videos"] = videos
         if not videos:
