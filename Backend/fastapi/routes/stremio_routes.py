@@ -956,8 +956,8 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
     kdrama_series = get_cat_id("k-drama", "auto_kdrama", "series", strict=True) or get_cat_id("korean", "auto_korean", "series", strict=True)
     anime_movie = get_cat_id("anime", "auto_anime", "movie", strict=True)
     anime_series = get_cat_id("anime", "auto_anime", "series", strict=True)
-    latest_releases_movie = get_cat_id("latest releases", "auto_latest_releases", "movie", strict=True)
-    latest_releases_series = get_cat_id("latest releases", "auto_latest_releases", "series", strict=True)
+    latest_releases_movie = get_cat_id("latest releases", "auto_latest_releases", "movie", strict=True) or get_cat_id("recently added", "auto_recently_added", "movie", strict=True)
+    latest_releases_series = get_cat_id("latest releases", "auto_latest_releases", "series", strict=True) or get_cat_id("recently added", "auto_recently_added", "series", strict=True)
 
     # =========================================================================
     # 01 ✦ DISCOVER COLLECTION (TMDB Global Trends + Local Addon Fallback)
@@ -1073,6 +1073,27 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
                 "catalogSources": [
                     {"type": "movie", "addonId": addon_id, "catalogId": "latest_movies"},
                     {"type": "series", "addonId": addon_id, "catalogId": "latest_series"}
+                ],
+                "focusGifEnabled": False
+            },
+            {
+                "id": "folder-discover-toprated",
+                "title": "Top Rated All-Time",
+                "sources": [
+                    {"title": "IMDb: Top Rated Movies", "sortBy": "rank", "sortHow": "asc", "provider": "trakt", "mediaType": "MOVIE", "traktListId": 2142753},
+                    {"title": "IMDb: Top Rated TV Shows", "sortBy": "rank", "sortHow": "asc", "provider": "trakt", "mediaType": "TV", "traktListId": 2143363},
+                    {"type": "movie", "addonId": addon_id, "provider": "addon", "catalogId": "top_movies"},
+                    {"type": "series", "addonId": addon_id, "provider": "addon", "catalogId": "top_series"}
+                ],
+                "hideTitle": False,
+                "tileShape": "landscape",
+                "focusGifUrl": "",
+                "titleLogoUrl": f"{K_IMG}/Discover/Top%20Rated/logo.webp",
+                "coverImageUrl": f"{K_IMG}/Discover/Top%20Rated/cover.webp",
+                "heroBackdropUrl": f"{K_IMG}/Discover/Top%20Rated/backdrop.webp",
+                "catalogSources": [
+                    {"type": "movie", "addonId": addon_id, "catalogId": "top_movies"},
+                    {"type": "series", "addonId": addon_id, "catalogId": "top_series"}
                 ],
                 "focusGifEnabled": False
             }
@@ -1592,7 +1613,7 @@ async def build_nuvio_collection_data(token: str, collection_type: str = "full",
         for f in coll.get("folders") or []:
             sources = [
                 s for s in (f.get("sources") or [])
-                if s.get("provider") == "addon" and s.get("catalogId")
+                if s.get("provider") != "addon" or s.get("catalogId")
             ]
             if not sources:
                 continue
