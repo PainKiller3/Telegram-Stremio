@@ -36,7 +36,8 @@ async def send_start_message(client: Client, message: Message):
 
             await message.reply_text(
                 '🎉 <b>Welcome to the Telegram Stremio Media Server!</b>\n\n'
-                'Here are your personal links:\n\n' + links,
+                'Here are your personal links:\n\n' + links +
+                '\n\n🎬 <b>Jellyfin Account:</b> Send /jellyfin to manage or reset your media player account.',
                 quote=True,
                 parse_mode=enums.ParseMode.HTML
             )
@@ -90,7 +91,8 @@ async def send_start_message(client: Client, message: Message):
 
         await message.reply_text(
             '🎉 <b>Welcome back to the Telegram Stremio Subscription Manager!</b>\n\n'
-            'Your subscription is active. Here are your personal links:\n\n' + links,
+            'Your subscription is active. Here are your personal links:\n\n' + links +
+            '\n\n🎬 <b>Jellyfin Account:</b> Send /jellyfin to manage or reset your media player account.',
             quote=True,
             parse_mode=enums.ParseMode.HTML
         )

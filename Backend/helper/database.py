@@ -365,6 +365,54 @@ class Database:
         )
         return result.modified_count > 0
 
+    #----- Jellyfin / Emby User Recovery PIN Management
+    async def set_jellyfin_user(self, username: str, recovery_pin: str) -> None:
+        await self.dbs["tracking"]["jellyfin_users"].update_one(
+            {"username": username.strip().lower()},
+            {
+                "$set": {
+                    "username": username.strip().lower(),
+                    "display_name": username.strip(),
+                    "recovery_pin": str(recovery_pin).strip(),
+                    "updated_at": datetime.utcnow()
+                }
+            },
+            upsert=True
+        )
+
+    async def get_jellyfin_user(self, username: str) -> Optional[dict]:
+        return await self.dbs["tracking"]["jellyfin_users"].find_one(
+            {"username": username.strip().lower()}
+        )
+
+    async def link_jellyfin_user(self, user_id: int, username: str) -> bool:
+        """Links a Jellyfin username to a Telegram user_id. Ensures username isn't claimed by another user."""
+        clean_user = username.strip().lower()
+        existing = await self.dbs["tracking"]["users"].find_one({
+            "jellyfin_username": clean_user,
+            "_id": {"$ne": user_id}
+        })
+        if existing:
+            return False
+        await self.dbs["tracking"]["users"].update_one(
+            {"_id": user_id},
+            {"$set": {"jellyfin_username": clean_user, "jellyfin_display_name": username.strip()}},
+            upsert=True
+        )
+        return True
+
+    async def get_linked_jellyfin_username(self, user_id: int) -> Optional[str]:
+        user = await self.get_user(user_id)
+        if user and user.get("jellyfin_username"):
+            return user.get("jellyfin_display_name") or user.get("jellyfin_username")
+        return None
+
+    async def unlink_jellyfin_user(self, user_id: int) -> None:
+        await self.dbs["tracking"]["users"].update_one(
+            {"_id": user_id},
+            {"$unset": {"jellyfin_username": "", "jellyfin_display_name": ""}}
+        )
+
     async def get_expired_users(self) -> List[dict]:
         cursor = self.dbs["tracking"]["users"].find({
             "subscription_expiry": {"$lt": datetime.utcnow()},

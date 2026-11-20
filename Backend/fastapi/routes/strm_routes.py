@@ -89,8 +89,10 @@ async def strm_export_zip_api(
         LOGGER.error(f"[STRM] Zip export failed: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to generate STRM zip: {str(e)}")
 
+import asyncio
 import aiohttp
 from fastapi.responses import HTMLResponse
+from Backend import db
 from Backend.fastapi.routes.template_routes import templates
 
 
@@ -126,11 +128,14 @@ async def public_signup_api(payload: dict, request: Request):
 
     username = str(payload.get("username") or "").strip()
     password = str(payload.get("password") or "").strip()
+    recovery_pin = str(payload.get("recovery_pin") or "").strip()
 
     if not username:
         raise HTTPException(status_code=400, detail="Username is required.")
     if len(password) < 4:
         raise HTTPException(status_code=400, detail="Password must be at least 4 characters.")
+    if not recovery_pin or len(recovery_pin) < 4:
+        raise HTTPException(status_code=400, detail="4-to-6 digit Recovery PIN is required.")
 
     emby_base = (settings.emby_url or "http://localhost:8096").rstrip("/")
 
@@ -188,6 +193,121 @@ async def public_signup_api(payload: dict, request: Request):
                     pass
             except Exception as ple:
                 LOGGER.warning(f"[Emby API] Policy update failed: {ple}")
+
+        # 4. Save Recovery PIN in MongoDB for password resets
+        try:
+            await db.set_jellyfin_user(username, recovery_pin)
+        except Exception as dbe:
+            LOGGER.warning(f"[Jellyfin Auth] Could not store recovery PIN in DB: {dbe}")
+
+    hostname = request.url.hostname or "localhost"
+    login_url = settings.emby_public_url or f"http://{hostname}:8096"
+    return {
+        "status": "success",
+        "username": username,
+        "login_url": login_url,
+    }
+
+
+@router.get("/resetpassword", response_class=HTMLResponse, tags=["Public Password Reset"])
+async def public_reset_password_page(request: Request):
+    """Public password reset page for Jellyfin / Emby users."""
+    settings = SettingsManager.current()
+    if not settings.emby_public_signup:
+        raise HTTPException(status_code=403, detail="Public user management is currently disabled by administrator.")
+
+    hostname = request.url.hostname or "localhost"
+    emby_external = settings.emby_public_url or f"http://{hostname}:8096"
+    return templates.TemplateResponse(
+        "resetpassword.html",
+        {
+            "request": request,
+            "brand_name": "Telestream",
+            "emby_external_url": emby_external,
+        },
+    )
+
+
+@router.post("/api/resetpassword", tags=["Public Password Reset"])
+async def public_reset_password_api(payload: dict, request: Request):
+    """API endpoint to reset a Jellyfin user password using a verified recovery PIN."""
+    settings = SettingsManager.current()
+    if not settings.emby_public_signup:
+        raise HTTPException(status_code=403, detail="Public user management is currently disabled.")
+
+    api_key = settings.emby_api_key
+    if not api_key:
+        raise HTTPException(status_code=500, detail="Emby API key is not configured in Telestream settings.")
+
+    username = str(payload.get("username") or "").strip()
+    recovery_pin = str(payload.get("recovery_pin") or "").strip()
+    new_password = str(payload.get("new_password") or "").strip()
+
+    if not username:
+        raise HTTPException(status_code=400, detail="Username is required.")
+    if not recovery_pin:
+        raise HTTPException(status_code=400, detail="Recovery PIN is required.")
+    if len(new_password) < 4:
+        raise HTTPException(status_code=400, detail="New password must be at least 4 characters.")
+
+    # 1. Verify recovery PIN from DB
+    record = await db.get_jellyfin_user(username)
+    if not record or str(record.get("recovery_pin")).strip() != recovery_pin:
+        raise HTTPException(status_code=400, detail="Invalid username or recovery PIN.")
+
+    emby_base = (settings.emby_url or "http://localhost:8096").rstrip("/")
+    headers = {
+        "X-Emby-Token": api_key,
+        "Authorization": f'MediaBrowser Token="{api_key}"',
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+
+    async with aiohttp.ClientSession() as session:
+        # 2. Find user in Jellyfin: GET /Users
+        try:
+            async with session.get(f"{emby_base}/Users", headers=headers, timeout=10) as resp:
+                if resp.status != 200:
+                    err_txt = await resp.text()
+                    LOGGER.error(f"[Jellyfin API] Failed to list users {resp.status}: {err_txt}")
+                    raise HTTPException(status_code=502, detail="Failed to communicate with Jellyfin/Emby server.")
+                users = await resp.json()
+        except asyncio.TimeoutError:
+            raise HTTPException(status_code=504, detail="Media server timed out.")
+        except Exception as e:
+            if isinstance(e, HTTPException):
+                raise e
+            LOGGER.error(f"[Jellyfin API] Connection failed: {e}")
+            raise HTTPException(status_code=502, detail=f"Could not connect to Jellyfin/Emby: {e}")
+
+        target_user = None
+        for u in users:
+            if (u.get("Name") or "").strip().lower() == username.lower():
+                target_user = u
+                break
+
+        if not target_user:
+            raise HTTPException(status_code=404, detail="User not found in Jellyfin.")
+
+        # Block resetting administrator passwords via this public portal
+        if (target_user.get("Policy") or {}).get("IsAdministrator"):
+            raise HTTPException(status_code=403, detail="Administrator passwords cannot be reset via this page.")
+
+        user_id = target_user.get("Id")
+
+        # 3. Update Password: POST /Users/{user_id}/Password
+        pwd_url = f"{emby_base}/Users/{user_id}/Password"
+        try:
+            async with session.post(pwd_url, json={"NewPw": new_password, "ResetPassword": False}, headers=headers) as presp:
+                if presp.status not in (200, 204):
+                    err_txt = await presp.text()
+                    LOGGER.error(f"[Jellyfin API] Password update failed {presp.status}: {err_txt}")
+                    raise HTTPException(status_code=500, detail="Failed to update password in Jellyfin.")
+        except Exception as pe:
+            if isinstance(pe, HTTPException):
+                raise pe
+            LOGGER.error(f"[Jellyfin API] Error updating password: {pe}")
+            raise HTTPException(status_code=500, detail="Error communicating with Jellyfin.")
 
     hostname = request.url.hostname or "localhost"
     login_url = settings.emby_public_url or f"http://{hostname}:8096"

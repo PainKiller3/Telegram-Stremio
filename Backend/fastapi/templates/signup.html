@@ -192,6 +192,14 @@
             <input type="password" id="confirm_password" class="s-input" required placeholder="Re-type your password" autocomplete="new-password">
         </div>
 
+        <div class="form-group">
+            <label class="s-label" for="recovery_pin">Recovery PIN (4–6 Digits)</label>
+            <input type="text" id="recovery_pin" class="s-input" required placeholder="e.g. 1234 (used to reset password)" maxlength="6" pattern="[0-9]{4,6}" inputmode="numeric" autocomplete="off">
+            <small style="color:var(--text-sec);font-size:0.75rem;display:block;margin-top:0.35rem;">
+                Remember this PIN! You will need it to reset your password if you ever forget it.
+            </small>
+        </div>
+
         <button type="submit" id="submit-btn" class="btn-submit">
             <i class="fa-solid fa-user-plus"></i> Sign Up
         </button>
@@ -199,6 +207,9 @@
 
     <div class="footer-links">
         Already have an account? <a href="{{ emby_external_url or 'http://' + request.url.hostname + ':8096' }}" target="_blank">Open Media Player &rarr;</a>
+        <div style="margin-top:0.75rem;">
+            Forgot password? <a href="/resetpassword">Reset Password &rarr;</a>
+        </div>
     </div>
 </div>
 
@@ -208,6 +219,7 @@ async function handleSignup(e) {
     const u = document.getElementById('username').value.trim();
     const p = document.getElementById('password').value;
     const cp = document.getElementById('confirm_password').value;
+    const rpin = document.getElementById('recovery_pin').value.trim();
     const msg = document.getElementById('msg');
     const btn = document.getElementById('submit-btn');
 
@@ -223,6 +235,12 @@ async function handleSignup(e) {
         return;
     }
 
+    if (!rpin || rpin.length < 4) {
+        msg.className = 'msg-box error';
+        msg.textContent = 'Please enter a 4-to-6 digit Recovery PIN.';
+        return;
+    }
+
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating account...';
     msg.style.display = 'none';
@@ -231,7 +249,7 @@ async function handleSignup(e) {
         const res = await fetch('/api/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: u, password: p })
+            body: JSON.stringify({ username: u, password: p, recovery_pin: rpin })
         });
         const data = await res.json();
         if (res.ok) {

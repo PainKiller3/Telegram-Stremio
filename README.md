@@ -1095,15 +1095,57 @@ If Emby is running on a different machine or PC:
 * Extract the folder into your Emby media directory.
 
 #### 👥 Native User Self-Service Signup Page (`/signup`)
-Telestream includes a built-in public registration portal for Emby users:
+Telestream includes a built-in public registration portal for Jellyfin & Emby users:
 1. In Telestream **Settings** → **Emby & Jellyfin (.strm Support)**:
-   * Enter your **Emby API Key** (generated in Emby ⚙️ → **API Keys**).
+   * Enter your **Emby API Key** (generated in Jellyfin / Emby ⚙️ → **API Keys**).
    * Check **Enable Public User Signup Page (`/signup`)**.
 2. Give your users the registration link:
    ```text
    https://yourdomain.com/signup
    ```
-3. Users pick their own username and password. Telestream automatically communicates with Emby's API to register them with safe, non-admin permissions!
+3. Users pick their username, password, and a 4-to-6 digit **Recovery PIN**. Telestream automatically communicates with Jellyfin's API to register them with safe, non-admin permissions!
+
+#### 🔑 Self-Service Password Reset (Telegram Bot & Web Portal)
+No SMTP server setup, email verification, or manual server terminal access required!
+
+##### 🤖 Resetting via Telegram Bot (Recommended — Works for New & Existing Users)
+Users can manage and reset their Jellyfin password directly in your Telegram bot:
+
+* **For Existing (Old) Users:**
+  * Even if a user created their account before this update and doesn't have a recovery PIN or Stremio token, they can link their account in seconds.
+  * In the bot, send:
+    ```text
+    /linkjellyfin <username>
+    ```
+    *(Example: `/linkjellyfin alex`)*
+  * Once linked, reset the password anytime:
+    ```text
+    /resetjellyfin <new_password>
+    ```
+    *(Example: `/resetjellyfin MyNewPassword123`)*
+
+* **For New Users:**
+  * After signing up on `/signup`, open the Telegram bot and link your username using `/linkjellyfin <username>`.
+  * If you ever forget your password in the future, send `/resetjellyfin <new_password>` to update it instantly!
+
+* **Commands Summary:**
+  | Command | Description |
+  | :--- | :--- |
+  | `/jellyfin` | View linked account, server address, and quick action buttons. |
+  | `/linkjellyfin <username>` | Link your Telegram account to your Jellyfin username. |
+  | `/resetjellyfin <new_password>` | Instantly change your Jellyfin password via API. |
+  | `/unlinkjellyfin` | Unlink your Jellyfin account from Telegram. |
+  | `/admin_resetjellyfin <user> <pass>` | *(Admin only)* Force reset any user's password. |
+
+##### 🌐 Resetting via Web Portal (`/resetpassword`)
+For users who set a Recovery PIN during signup:
+1. Open the reset portal:
+   ```text
+   https://yourdomain.com/resetpassword
+   ```
+2. Enter your **Username**, your **Recovery PIN**, and your **New Password**.
+3. The password updates immediately and redirects directly to the media player login screen!
+*(Admin accounts are automatically protected from being reset via the public web page).*
 
 ---
 

@@ -337,6 +337,10 @@ async def restart_notification():
 #----- Bot commands (stats, log and restart moved to the web app)
 commands = [
     BotCommand("start", "🚀 Start the bot"),
+    BotCommand("jellyfin", "🍿 Jellyfin account & player"),
+    BotCommand("linkjellyfin", "🔗 Link your Jellyfin username"),
+    BotCommand("resetjellyfin", "🔑 Reset your Jellyfin password"),
+    BotCommand("status", "📊 Subscription status"),
     BotCommand("set", "🎬 Manually add IMDb metadata"),
 ]
 
