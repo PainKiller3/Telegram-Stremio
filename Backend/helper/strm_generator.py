@@ -192,11 +192,13 @@ class STRMExporter:
         target_dir = os.path.abspath(target_dir)
         os.makedirs(target_dir, exist_ok=True)
 
+        valid_files = set()
         count_strm = 0
         count_nfo = 0
 
         async for rel_path, content in self.collect_files():
-            full_path = os.path.join(target_dir, rel_path.replace("/", os.sep))
+            full_path = os.path.normpath(os.path.join(target_dir, rel_path.replace("/", os.sep)))
+            valid_files.add(full_path)
             os.makedirs(os.path.dirname(full_path), exist_ok=True)
 
             if isinstance(content, str):
@@ -224,12 +226,41 @@ class STRMExporter:
             else:
                 count_nfo += 1
 
+        # Prune deleted / orphaned .strm and .nfo files that no longer exist in the database
+        deleted_count = 0
+        for sub in ("Movies", "TV Shows"):
+            sub_dir = os.path.join(target_dir, sub)
+            if not os.path.isdir(sub_dir):
+                continue
+            for root, dirs, files in os.walk(sub_dir, topdown=False):
+                for f in files:
+                    if f.endswith(".strm") or f.endswith(".nfo"):
+                        fp = os.path.normpath(os.path.join(root, f))
+                        if fp not in valid_files:
+                            try:
+                                os.remove(fp)
+                                deleted_count += 1
+                            except Exception as rm_err:
+                                LOGGER.debug(f"[STRM Prune] Failed removing {fp}: {rm_err}")
+                # Remove empty folders left behind
+                try:
+                    if not os.listdir(root):
+                        os.rmdir(root)
+                except Exception:
+                    pass
+
+        if deleted_count > 0:
+            LOGGER.info(f"[STRM] Pruned {deleted_count} orphaned .strm/.nfo file(s) for deleted media.")
+
+        await notify_emby_library_refresh()
+
         LOGGER.info(f"[STRM] Exported {count_strm} .strm files and {count_nfo} .nfo files to {target_dir}")
         return {
             "status": "success",
             "target_dir": target_dir,
             "strm_count": count_strm,
             "nfo_count": count_nfo,
+            "pruned_count": deleted_count,
         }
 
     async def create_zip_archive(self) -> io.BytesIO:

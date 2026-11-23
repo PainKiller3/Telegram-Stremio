@@ -837,7 +837,11 @@ async function syncStrmLibrary(btn) {
         const data = await res.json();
         if (res.ok) {
             if (msg) {
-                msg.textContent = `Synced ${data.strm_count} stream files & ${data.nfo_count} metadata files!`;
+                let text = `Synced ${data.strm_count} stream files & ${data.nfo_count} metadata files!`;
+                if (data.pruned_count > 0) {
+                    text += ` (Cleaned up ${data.pruned_count} deleted files)`;
+                }
+                msg.textContent = text;
                 msg.style.color = '#22c55e';
             }
         } else {
@@ -2282,7 +2286,11 @@ async function syncStrmLibrary(btn) {
         const data = await res.json();
         if (res.ok) {
             if (msg) {
-                msg.textContent = `Synced ${data.strm_count} stream files & ${data.nfo_count} metadata files!`;
+                let text = `Synced ${data.strm_count} stream files & ${data.nfo_count} metadata files!`;
+                if (data.pruned_count > 0) {
+                    text += ` (Cleaned up ${data.pruned_count} deleted files)`;
+                }
+                msg.textContent = text;
                 msg.style.color = '#22c55e';
             }
         } else {
