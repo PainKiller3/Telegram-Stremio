@@ -118,6 +118,7 @@ def tvshow_nfo(doc: Dict[str, Any]) -> str:
     tmdb_id = doc.get("tmdb_id")
     genres = _unique_list(doc.get("genres"))
     cast = _unique_list(doc.get("cast"))
+    runtime = _runtime_minutes(doc.get("runtime"))
     poster = doc.get("poster") or ""
     backdrop = doc.get("backdrop") or ""
     countries = _unique_list(doc.get("production_countries") or doc.get("origin_country"))
@@ -147,6 +148,8 @@ def tvshow_nfo(doc: Dict[str, Any]) -> str:
             lines.append("  </ratings>")
         except (TypeError, ValueError):
             pass
+    if runtime:
+        lines.append(f"  <runtime>{runtime}</runtime>")
     if imdb_id:
         lines.append(f"  <id>{_e(imdb_id)}</id>")
         lines.append(f"  <imdbid>{_e(imdb_id)}</imdbid>")
@@ -188,6 +191,7 @@ def episode_nfo(
     imdb_id = show_doc.get("imdb_id") or ""
     tmdb_id = show_doc.get("tmdb_id")
     backdrop = episode.get("episode_backdrop") or show_doc.get("backdrop") or ""
+    runtime = _runtime_minutes(episode.get("runtime") or show_doc.get("runtime"))
 
     lines = [
         '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
@@ -197,6 +201,8 @@ def episode_nfo(
         f"  <season>{season_number}</season>",
         f"  <episode>{ep_num}</episode>",
     ]
+    if runtime:
+        lines.append(f"  <runtime>{runtime}</runtime>")
     if plot:
         lines.append(f"  <plot>{_e(plot)}</plot>")
     if aired:
