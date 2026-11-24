@@ -15,6 +15,7 @@ from fastapi.responses import Response, StreamingResponse
 
 from Backend.fastapi.security.tokens import verify_token
 from Backend.fastapi.security.credentials import require_auth
+from Backend.helper.library import get_library_item_details, get_library_stats, query_library_list
 from Backend.helper.settings_manager import SettingsManager
 from Backend.helper.strm_generator import STRMExporter, resolve_strm_token
 from Backend.logger import LOGGER
@@ -316,3 +317,58 @@ async def public_reset_password_api(payload: dict, request: Request):
         "username": username,
         "login_url": login_url,
     }
+
+
+# =====================================================================
+# Library Browser & Explorer API
+# =====================================================================
+
+@router.get("/library", response_class=Response)
+async def library_page(request: Request):
+    """Serve the interactive Library catalog explorer."""
+    from Backend.fastapi.routes.template_routes import templates, _base_context
+    ctx = _base_context(request)
+    ctx["brand_name"] = "TeleStremio"
+    return templates.TemplateResponse("library.html", ctx)
+
+
+@router.get("/api/public/db/list")
+@router.get("/api/library/list")
+async def public_library_list(
+    type: str = Query("all", regex="^(all|movie|tv|series)$"),
+    filter: str = Query("all"),
+    sort: str = Query("recent"),
+    q: str = Query("", max_length=120),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(36, ge=1, le=100),
+):
+    """Fetch paginated, filterable library items and ledger stats."""
+    try:
+        return await query_library_list(
+            media_type=type,
+            filter_tag=filter,
+            sort_by=sort,
+            query=q,
+            page=page,
+            page_size=page_size,
+        )
+    except Exception as e:
+        LOGGER.error(f"[Library API] List error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load library items.")
+
+
+@router.get("/api/public/db/item/{key:path}")
+@router.get("/api/library/item/{key:path}")
+async def public_library_item(key: str):
+    """Fetch full item details for preview drawer/modal."""
+    try:
+        data = await get_library_item_details(key)
+        if not data:
+            raise HTTPException(status_code=404, detail="Media item not found.")
+        return data
+    except HTTPException:
+        raise
+    except Exception as e:
+        LOGGER.error(f"[Library API] Item error for {key}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch item details.")
+

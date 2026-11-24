@@ -2,6 +2,7 @@
 {%- set path = request.url.path -%}
 {%- set nav = [
     ('/', 'Home', 'fa-house', '/'),
+    ('/library', 'Library', 'fa-compass', '/library'),
     ('/media/manage', 'Media', 'fa-clapperboard', '/media'),
     ('/catalogs', 'Catalogs', 'fa-layer-group', '/catalogs'),
     ('/admin/dashboard', 'Admin', 'fa-chart-simple', '/admin/dashboard'),
@@ -773,7 +774,7 @@ document.getElementById('theme-cycle')?.addEventListener('click', () => {
     const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
     const MOD = isMac ? '⌘' : 'Ctrl';
     const kbd = keys => keys.map(k => `<kbd class="k">${k}</kbd>`).join('');
-    const GO = { h: '/', m: '/media/manage', c: '/catalogs', a: '/admin/dashboard', p: '/admin/subscriptions', t: '/admin/access', r: '/admin/requests', o: '/admin/tools', s: '/admin/settings' };
+    const GO = { h: '/', l: '/library', m: '/media/manage', c: '/catalogs', a: '/admin/dashboard', p: '/admin/subscriptions', t: '/admin/access', r: '/admin/requests', o: '/admin/tools', s: '/admin/settings' };
     const PAGES = [...document.querySelectorAll('#rail .rail-nav .rail-item')].map(a => ({
         label: a.textContent.trim(), href: a.getAttribute('href'), icon: a.querySelector('i').className,
         key: Object.keys(GO).find(k => GO[k] === a.getAttribute('href'))
