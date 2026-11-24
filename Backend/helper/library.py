@@ -21,6 +21,31 @@ from Backend.logger import LOGGER
 # In-memory short-lived cache for ledger stats (5 minutes)
 _STATS_CACHE: Dict[str, Any] = {"data": None, "expires": 0}
 
+# In-memory LRU-style cache for library query pages (TTL: 3 minutes)
+_QUERY_CACHE: Dict[str, tuple[float, dict]] = {}
+_ITEM_CACHE: Dict[str, tuple[float, dict]] = {}
+_CACHE_MAX_ENTRIES = 300
+_CACHE_TTL = 180  # 3 minutes
+
+
+def _get_from_cache(cache: dict, key: str) -> Optional[dict]:
+    now = time.time()
+    if key in cache:
+        exp, val = cache[key]
+        if now < exp:
+            return val
+        del cache[key]
+    return None
+
+
+def _set_in_cache(cache: dict, key: str, val: dict, ttl: int = _CACHE_TTL) -> None:
+    if len(cache) >= _CACHE_MAX_ENTRIES:
+        # Prune oldest 20%
+        oldest = sorted(cache.keys(), key=lambda k: cache[k][0])[: _CACHE_MAX_ENTRIES // 5]
+        for k in oldest:
+            cache.pop(k, None)
+    cache[key] = (time.time() + ttl, val)
+
 
 def parse_filename_meta(filename: str) -> Dict[str, Any]:
     """Parse resolution, codec, audio, source, and languages from video filename."""
@@ -246,13 +271,17 @@ async def query_library_list(
     sort_by: str = "recent",
     query: str = "",
     page: int = 1,
-    page_size: int = 24,
+    page_size: int = 36,
 ) -> dict:
     """
     Paginated search and filter query across movies and tv shows in TeleStremio.
-    Supports filter_tag: all, hindi, english, uhd (based on TMDB original_language / 4k)
-    sort_by: recent, title, year
+    Supports in-memory caching for lightning fast pagination & filter switches.
     """
+    cache_key = f"{media_type}:{filter_tag}:{sort_by}:{query}:{page}:{page_size}"
+    cached = _get_from_cache(_QUERY_CACHE, cache_key)
+    if cached:
+        return cached
+
     movie_filter, tv_filter = _build_db_filters(filter_tag)
 
     # 1. Search Query Branch
@@ -287,7 +316,7 @@ async def query_library_list(
             items.append(summary)
 
         stats = await get_library_stats()
-        return {
+        out = {
             "total": total,
             "page": page,
             "page_size": page_size,
@@ -295,6 +324,8 @@ async def query_library_list(
             "items": items,
             "stats": stats,
         }
+        _set_in_cache(_QUERY_CACHE, cache_key, out)
+        return out
 
     # 2. Browse / Paginated Sort Branch
     if sort_by == "title":
@@ -342,7 +373,7 @@ async def query_library_list(
             items.append(summary)
 
     stats = await get_library_stats()
-    return {
+    out = {
         "total": total,
         "page": page,
         "page_size": page_size,
@@ -350,6 +381,8 @@ async def query_library_list(
         "items": items,
         "stats": stats,
     }
+    _set_in_cache(_QUERY_CACHE, cache_key, out)
+    return out
 
 
 async def get_library_item_details(key: str) -> Optional[dict]:
@@ -358,6 +391,10 @@ async def get_library_item_details(key: str) -> Optional[dict]:
     episodes, file codecs, stream urls, and deep links.
     key format: 'movie-{db_index}-{tmdb_id}' or 'tv-{db_index}-{tmdb_id}'
     """
+    cached = _get_from_cache(_ITEM_CACHE, key)
+    if cached:
+        return cached
+
     parts = key.split("-")
     if len(parts) < 3:
         return None
@@ -467,4 +504,5 @@ async def get_library_item_details(key: str) -> Optional[dict]:
             })
         result["seasons"] = seasons_data
 
+    _set_in_cache(_ITEM_CACHE, key, result, ttl=300)
     return result

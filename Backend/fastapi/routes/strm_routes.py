@@ -327,8 +327,11 @@ async def public_reset_password_api(payload: dict, request: Request):
 async def library_page(request: Request):
     """Serve the interactive Library catalog explorer."""
     from Backend.fastapi.routes.template_routes import templates, _base_context
+    from Backend.pyrofork.bot import StreamBot
     ctx = _base_context(request)
     ctx["brand_name"] = "TeleStremio"
+    bot_user = StreamBot.username if StreamBot and StreamBot.username else ""
+    ctx["bot_url"] = f"https://t.me/{bot_user}" if bot_user else "https://t.me"
     return templates.TemplateResponse("library.html", ctx)
 
 
