@@ -281,7 +281,7 @@ button, input, select { font: inherit; color: inherit; }
   font-family: var(--mono);
   font-size: 11px;
   font-weight: 600;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   z-index: 3;
 }
 .card-badge.uhd { color: var(--primary); border-color: color-mix(in srgb, var(--primary) 40%, transparent); }
@@ -289,13 +289,16 @@ button, input, select { font: inherit; color: inherit; }
   position: absolute;
   top: 6px;
   left: 6px;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.82);
   backdrop-filter: blur(4px);
   padding: 2px 7px;
   border-radius: 6px;
   font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--text-sec);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   z-index: 3;
 }
 .card-foot {
@@ -416,12 +419,12 @@ button, input, select { font: inherit; color: inherit; }
 .hero-scrim {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.92) 15%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.1));
+  background: linear-gradient(to top, rgba(0,0,0,0.96) 20%, rgba(0,0,0,0.6) 65%, rgba(0,0,0,0.2));
 }
 .hero-info { position: relative; z-index: 2; display: flex; gap: 18px; align-items: flex-end; }
-.hero-thumb { width: 90px; aspect-ratio: 2/3; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
-.hero-meta h2 { font-size: 22px; font-weight: 600; line-height: 1.2; }
-.hero-meta p { font-size: 13px; color: var(--text-sec); margin-top: 4px; }
+.hero-thumb { width: 90px; aspect-ratio: 2/3; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 16px rgba(0,0,0,0.5); flex-shrink: 0; }
+.hero-meta h2 { font-size: 22px; font-weight: 700; line-height: 1.2; color: #ffffff !important; text-shadow: 0 2px 8px rgba(0,0,0,0.7); }
+.hero-meta p { font-size: 13px; color: rgba(255, 255, 255, 0.85) !important; margin-top: 4px; text-shadow: 0 1px 4px rgba(0,0,0,0.7); }
 
 .action-row { display: flex; gap: 10px; margin: 18px 0; flex-wrap: wrap; }
 .play-btn {
