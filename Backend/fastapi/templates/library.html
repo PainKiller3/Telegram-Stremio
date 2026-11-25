@@ -54,6 +54,7 @@ button, input, select { font: inherit; color: inherit; }
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 16px 0;
   border-bottom: 1px solid var(--border);
   margin-bottom: 24px;
@@ -65,6 +66,7 @@ button, input, select { font: inherit; color: inherit; }
   font-weight: 600;
   font-size: 18px;
   letter-spacing: -0.01em;
+  flex-shrink: 0;
 }
 .brand-icon {
   width: 32px;
@@ -76,23 +78,26 @@ button, input, select { font: inherit; color: inherit; }
   align-items: center;
   justify-content: center;
   font-size: 14px;
+  flex-shrink: 0;
 }
 .top-links {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 .nav-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 15px;
+  padding: 7px 14px;
   border-radius: 9999px;
   font-size: 13px;
   font-weight: 500;
   border: 1px solid var(--border);
   background: var(--card);
   transition: all .15s var(--ease);
+  white-space: nowrap;
 }
 .nav-btn:hover {
   background: var(--card-high);
@@ -108,6 +113,11 @@ button, input, select { font: inherit; color: inherit; }
 .nav-btn.primary:hover {
   filter: brightness(1.1);
   color: var(--on-primary);
+}
+@media (max-width: 480px) {
+  .topbar { padding: 12px 0; }
+  .brand-link span { font-size: 16px; }
+  .nav-btn { padding: 6px 10px; font-size: 12px; gap: 5px; }
 }
 
 /* Masthead */
@@ -161,6 +171,7 @@ button, input, select { font: inherit; color: inherit; }
   font-size: 12px;
 }
 .filter-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.filter-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .seg-group { display: inline-flex; padding: 4px; gap: 3px; border-radius: 10px; background: var(--card); border: 1px solid var(--border); }
 .seg-group button {
   padding: 6px 14px;
@@ -178,7 +189,7 @@ button, input, select { font: inherit; color: inherit; }
 
 .chips { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .chip {
-  padding: 5px 13px;
+  padding: 6px 13px;
   border-radius: 9999px;
   font-size: 12px;
   font-weight: 500;
@@ -192,15 +203,27 @@ button, input, select { font: inherit; color: inherit; }
 .chip.active { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); }
 
 .sort-select {
-  padding: 8px 14px;
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: var(--card);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23888' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+  padding: 8px 34px 8px 14px;
   border-radius: 10px;
-  background: var(--card);
   border: 1px solid var(--border);
   color: var(--text);
   font-size: 13px;
+  font-weight: 500;
   outline: none;
   cursor: pointer;
+  transition: border-color .15s var(--ease), box-shadow .15s var(--ease);
+  height: 38px;
 }
+.sort-select:hover { border-color: var(--line-2); }
+.sort-select:focus { border-color: var(--primary); }
+.sort-select option { background-color: var(--card); color: var(--text); }
 
 /* Media Cards Grid */
 .grid {
@@ -465,10 +488,154 @@ button, input, select { font: inherit; color: inherit; }
 .copy-btn:hover { border-color: var(--primary); }
 
 .season-block { margin-top: 24px; }
-.season-title { font-size: 15px; font-weight: 600; margin-bottom: 10px; color: var(--text); display: flex; align-items: center; justify-content: space-between; }
-.ep-row { padding: 10px 12px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
+.season-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px 0 14px;
+  margin-top: 10px;
+}
+.season-tabs::-webkit-scrollbar { display: none; }
+.season-tab {
+  padding: 7px 16px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-sec);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s var(--ease);
+}
+.season-tab:hover { color: var(--text); border-color: var(--line-2); }
+.season-tab.active {
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: var(--primary);
+  font-weight: 600;
+}
+.ep-list {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ep-row {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: background-color .15s var(--ease);
+}
 .ep-row:last-child { border-bottom: 0; }
-.ep-head { display: flex; justify-content: space-between; font-size: 13px; font-weight: 500; }
+.ep-row:hover { background: color-mix(in srgb, var(--card-high) 60%, transparent); }
+.ep-thumb-wrap {
+  position: relative;
+  width: 104px;
+  aspect-ratio: 16/9;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--card-high);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.ep-thumb-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ep-thumb-wrap .ep-ph {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-sec);
+  font-size: 16px;
+}
+.ep-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ep-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ep-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ep-date {
+  font-size: 11px;
+  color: var(--text-sec);
+  white-space: nowrap;
+}
+.ep-files {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 2px;
+}
+.imdb-badge-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s var(--ease);
+}
+.imdb-badge-btn:hover {
+  border-color: #f5c518;
+  background: var(--card-high);
+}
+.imdb-logo {
+  background: #f5c518;
+  color: #000;
+  font-weight: 900;
+  font-size: 11px;
+  line-height: 1.2;
+  padding: 2px 5px;
+  border-radius: 3px;
+  letter-spacing: -0.3px;
+  display: inline-block;
+}
+.imdb-star {
+  color: #f5c518;
+  font-size: 12px;
+}
+.meta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 9999px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text-sec);
+  font-size: 13px;
+  font-weight: 500;
+}
 </style>
 </head>
 <body>
@@ -515,7 +682,7 @@ button, input, select { font: inherit; color: inherit; }
     <div class="cell">
       <div class="label">Playback Support</div>
       <div class="big" style="color:var(--primary)">Direct</div>
-      <div class="sub">Stremio · Jellyfin · Infuse</div>
+      <div class="sub">Stremio · Nuvio · Jellyfin</div>
     </div>
   </section>
 
@@ -527,20 +694,22 @@ button, input, select { font: inherit; color: inherit; }
     </div>
 
     <div class="filter-row">
-      <div class="seg-group" id="type-seg">
-        <button data-type="all" class="active">All</button>
-        <button data-type="movie">Movies</button>
-        <button data-type="tv">Series</button>
+      <div class="filter-left">
+        <div class="seg-group" id="type-seg">
+          <button data-type="all" class="active">All</button>
+          <button data-type="movie">Movies</button>
+          <button data-type="tv">Series</button>
+        </div>
+
+        <div class="chips" id="filter-chips">
+          <button class="chip active" data-filter="all">All</button>
+          <button class="chip" data-filter="hindi">Hindi</button>
+          <button class="chip" data-filter="english">English</button>
+          <button class="chip" data-filter="uhd">4K UHD</button>
+        </div>
       </div>
 
-      <div class="chips" id="filter-chips">
-        <button class="chip active" data-filter="all">All</button>
-        <button class="chip" data-filter="hindi">Hindi</button>
-        <button class="chip" data-filter="english">English</button>
-        <button class="chip" data-filter="uhd">4K UHD</button>
-      </div>
-
-      <select class="sort-select" id="sort-select">
+      <select class="sort-select" id="sort-select" aria-label="Sort Order">
         <option value="recent">Recently Added</option>
         <option value="title">Title (A-Z)</option>
         <option value="year">Release Year</option>
@@ -740,48 +909,30 @@ function renderModalContent(d) {
                 <div class="file-pills">
                   <span class="fpill hi">${esc(f.res)}</span>
                   ${f.codec ? `<span class="fpill">${esc(f.codec)}</span>` : ''}
-                  ${f.size ? `<span class="fpill">${esc(f.size)}</span>` : ''}
                   ${(f.langs || []).map(l => `<span class="fpill">${esc(l)}</span>`).join('')}
                 </div>
               </div>
-              ${f.stream_url ? `<button class="copy-btn" onclick="copyText('${esc(f.stream_url)}')"><i class="fa-solid fa-link"></i> Copy Link</button>` : ''}
             </div>
           `).join('')}
         </div>
       </div>
     `;
-  } else if (isSeries && d.seasons) {
+  } else if (isSeries && d.seasons && d.seasons.length > 0) {
+    window._currentSeasons = d.seasons;
     filesHtml = `
       <div style="margin-top:24px">
-        <h4 style="font-size:14px;color:var(--text-sec);text-transform:uppercase;letter-spacing:0.06em">Episodes & Seasons</h4>
-        ${d.seasons.map(s => `
-          <div class="season-block">
-            <div class="season-title">
-              <span>${esc(s.title || 'Season ' + s.n)}</span>
-              <span style="font-size:12px;color:var(--text-sec)">${(s.episodes || []).length} Episodes</span>
-            </div>
-            <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden">
-              ${(s.episodes || []).map(ep => `
-                <div class="ep-row">
-                  <div class="ep-head">
-                    <span>E${ep.n}: ${esc(ep.title)}</span>
-                    <span style="color:var(--text-sec)">${esc(ep.released || '')}</span>
-                  </div>
-                  ${(ep.files || []).map(f => `
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px">
-                      <span class="file-pills">
-                        <span class="fpill hi">${esc(f.res)}</span>
-                        ${f.size ? `<span class="fpill">${esc(f.size)}</span>` : ''}
-                        ${(f.langs || []).slice(0, 2).map(l => `<span class="fpill">${esc(l)}</span>`).join('')}
-                      </span>
-                      ${f.stream_url ? `<button class="copy-btn" onclick="copyText('${esc(f.stream_url)}')"><i class="fa-solid fa-copy"></i></button>` : ''}
-                    </div>
-                  `).join('')}
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        `).join('')}
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <h4 style="font-size:14px;color:var(--text-sec);text-transform:uppercase;letter-spacing:0.06em">Episodes & Seasons</h4>
+          <span style="font-size:12px;color:var(--text-sec)" id="season-ep-count"></span>
+        </div>
+        <div class="season-tabs" id="season-tabs">
+          ${d.seasons.map((s, idx) => `
+            <button class="season-tab ${idx === 0 ? 'active' : ''}" onclick="switchSeason(${s.n})">
+              ${esc(s.title || 'Season ' + s.n)}
+            </button>
+          `).join('')}
+        </div>
+        <div id="season-episodes" class="ep-list"></div>
       </div>
     `;
   }
@@ -801,15 +952,79 @@ function renderModalContent(d) {
     </div>
 
     <div class="action-row">
-      ${d.stremio_url ? `<a href="${esc(d.stremio_url)}" class="play-btn"><i class="fa-solid fa-play"></i> Watch in Stremio</a>` : ''}
-      ${d.stremio_web_url ? `<a href="${esc(d.stremio_web_url)}" target="_blank" class="sec-btn"><i class="fa-solid fa-globe"></i> Stremio Web</a>` : ''}
-      ${d.imdb_url ? `<a href="${esc(d.imdb_url)}" target="_blank" class="sec-btn"><i class="fa-brands fa-imdb"></i> IMDb</a>` : ''}
+      ${d.imdb_url ? `<a href="${esc(d.imdb_url)}" target="_blank" rel="noopener" class="imdb-badge-btn"><span class="imdb-logo">IMDb</span> <i class="fa-solid fa-star imdb-star"></i> <span>${d.rating ? parseFloat(d.rating).toFixed(1) : 'IMDb'}</span></a>` : ''}
+      ${d.runtime ? `<span class="meta-badge"><i class="fa-regular fa-clock"></i> ${formatRuntime(d.runtime)}</span>` : ''}
+      <a href="{{ bot_url|default('https://t.me') }}" target="_blank" rel="noopener" class="play-btn"><i class="fa-brands fa-telegram"></i> Get Access to Watch</a>
     </div>
 
     <p class="detail-overview">${esc(d.description || 'No overview description available.')}</p>
 
     ${filesHtml}
   `;
+
+  if (isSeries && d.seasons && d.seasons.length > 0) {
+    switchSeason(d.seasons[0].n);
+  }
+}
+
+function formatRuntime(rt) {
+  if (!rt) return '';
+  const num = parseInt(rt, 10);
+  if (isNaN(num) || num <= 0) return String(rt);
+  const h = Math.floor(num / 60);
+  const m = num % 60;
+  if (h > 0 && m > 0) return `${h}h ${m}m`;
+  if (h > 0) return `${h}h`;
+  return `${m}m`;
+}
+
+function formatDate(isoStr) {
+  if (!isoStr) return '';
+  try {
+    const dt = new Date(isoStr);
+    if (isNaN(dt.getTime())) return isoStr;
+    return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  } catch(e) {
+    return isoStr;
+  }
+}
+
+function switchSeason(seasonNum) {
+  if (!window._currentSeasons) return;
+  document.querySelectorAll('#season-tabs .season-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.textContent.trim().toLowerCase().includes(String(seasonNum).toLowerCase()));
+  });
+  const season = window._currentSeasons.find(s => s.n === seasonNum) || window._currentSeasons[0];
+  if (!season) return;
+
+  const countEl = document.getElementById('season-ep-count');
+  if (countEl) countEl.textContent = `${(season.episodes || []).length} Episodes`;
+
+  const epListEl = document.getElementById('season-episodes');
+  if (!epListEl) return;
+
+  epListEl.innerHTML = (season.episodes || []).map(ep => `
+    <div class="ep-row">
+      <div class="ep-thumb-wrap">
+        ${ep.backdrop ? `<img src="${esc(ep.backdrop)}" loading="lazy" alt="" onerror="this.remove()">` : ''}
+        <div class="ep-ph"><i class="fa-solid fa-tv"></i></div>
+      </div>
+      <div class="ep-info">
+        <div class="ep-head">
+          <span class="ep-title">E${ep.n}: ${esc(ep.title)}</span>
+          <span class="ep-date">${formatDate(ep.released)}</span>
+        </div>
+        ${(ep.files || []).map(f => `
+          <div class="ep-files">
+            <span class="file-pills">
+              <span class="fpill hi">${esc(f.res)}</span>
+              ${(f.langs || []).slice(0, 2).map(l => `<span class="fpill">${esc(l)}</span>`).join('')}
+            </span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
 }
 
 function copyText(txt) {

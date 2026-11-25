@@ -15,7 +15,6 @@ import PTN
 from Backend import db
 from Backend.helper.metadata import resolve_cover_url
 from Backend.helper.settings_manager import SettingsManager
-from Backend.helper.strm_generator import build_strm_url, resolve_strm_token
 from Backend.logger import LOGGER
 
 # In-memory short-lived cache for ledger stats (5 minutes)
@@ -26,6 +25,14 @@ _QUERY_CACHE: Dict[str, tuple[float, dict]] = {}
 _ITEM_CACHE: Dict[str, tuple[float, dict]] = {}
 _CACHE_MAX_ENTRIES = 300
 _CACHE_TTL = 180  # 3 minutes
+
+
+def clear_library_cache() -> None:
+    """Invalidates all in-memory caches for the library ledger and queries."""
+    global _STATS_CACHE, _QUERY_CACHE, _ITEM_CACHE
+    _STATS_CACHE = {"data": None, "expires": 0}
+    _QUERY_CACHE.clear()
+    _ITEM_CACHE.clear()
 
 
 def _get_from_cache(cache: dict, key: str) -> Optional[dict]:
@@ -415,7 +422,6 @@ async def get_library_item_details(key: str) -> Optional[dict]:
     if not doc:
         return None
 
-    token = await resolve_strm_token()
     title = doc.get("title_english") or doc.get("title") or "Unknown"
     imdb_id = doc.get("imdb_id") or ""
     poster = resolve_cover_url(doc.get("poster") or "")
@@ -424,6 +430,7 @@ async def get_library_item_details(key: str) -> Optional[dict]:
     stremio_type = "series" if col_name == "tv" else "movie"
     stremio_id = imdb_id or f"tmdb:{tmdb_id}"
     stremio_open_url = f"/open/stremio/{col_name}/{stremio_id}"
+    nuvio_open_url = f"/open/nuvio/{col_name}/{stremio_id}"
     stremio_web_url = f"https://web.stremio.com/#/detail/{stremio_type}/{stremio_id}"
 
     result = {
@@ -441,8 +448,10 @@ async def get_library_item_details(key: str) -> Optional[dict]:
         "description": doc.get("description") or doc.get("overview") or "",
         "genres": doc.get("genres") or [],
         "rating": doc.get("rating"),
+        "logo": resolve_cover_url(doc.get("logo") or ""),
         "runtime": doc.get("runtime"),
         "stremio_url": stremio_open_url,
+        "nuvio_url": nuvio_open_url,
         "stremio_web_url": stremio_web_url,
         "imdb_url": f"https://www.imdb.com/title/{imdb_id}" if imdb_id else None,
         "tmdb_url": f"https://www.themoviedb.org/{'tv' if col_name == 'tv' else 'movie'}/{tmdb_id}",
@@ -453,18 +462,14 @@ async def get_library_item_details(key: str) -> Optional[dict]:
         for f in (doc.get("telegram") or []):
             fname = f.get("name") or f"{title}.mkv"
             meta = parse_filename_meta(fname)
-            stream_id = f.get("id") or ""
-            stream_url = build_strm_url(stream_id, fname, token) if stream_id else ""
             res_val = meta["res"] or f.get("quality") or "HD"
             files.append({
                 "name": fname,
-                "size": f.get("size") or "",
                 "res": res_val,
                 "codec": meta["codec"],
                 "quality": meta["quality"],
                 "audio": meta["audio"],
                 "langs": meta["langs"],
-                "stream_url": stream_url,
             })
         result["files"] = files
     else:
@@ -478,23 +483,21 @@ async def get_library_item_details(key: str) -> Optional[dict]:
                 for f in (ep.get("telegram") or []):
                     fname = f.get("name") or f"Episode {en}.mkv"
                     meta = parse_filename_meta(fname)
-                    stream_id = f.get("id") or ""
-                    stream_url = build_strm_url(stream_id, fname, token) if stream_id else ""
                     res_val = meta["res"] or f.get("quality") or "HD"
                     ep_files.append({
                         "name": fname,
-                        "size": f.get("size") or "",
                         "res": res_val,
                         "codec": meta["codec"],
                         "quality": meta["quality"],
                         "audio": meta["audio"],
                         "langs": meta["langs"],
-                        "stream_url": stream_url,
                     })
                 episodes_data.append({
                     "n": en,
                     "title": ep.get("title") or f"Episode {en}",
                     "released": ep.get("released") or "",
+                    "backdrop": resolve_cover_url(ep.get("episode_backdrop") or ""),
+                    "overview": ep.get("overview") or "",
                     "files": ep_files,
                 })
             seasons_data.append({

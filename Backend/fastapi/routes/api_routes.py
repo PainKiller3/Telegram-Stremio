@@ -591,12 +591,14 @@ async def get_admin_stats_api() -> dict:
 
 #----- Clear the FileId cache across all active streamers
 async def clear_cache_api() -> dict:
+    from Backend.helper.library import clear_library_cache
+    clear_library_cache()
     total_cleared = sum(len(s._file_id_cache) for s in _streamer_by_client.values())
     for streamer in _streamer_by_client.values():
         streamer._file_id_cache.clear()
-    LOGGER.info(f"Admin cleared the FileId cache ({total_cleared} items purged across {len(_streamer_by_client)} clients).")
+    LOGGER.info(f"Admin cleared the FileId cache ({total_cleared} items purged across {len(_streamer_by_client)} clients) and library cache.")
 
-    return {"status": "success", "message": f"{total_cleared} cached items cleared."}
+    return {"status": "success", "message": f"{total_cleared} cached items cleared and library refreshed."}
 
 
 #----- List dead links recorded in the DB
