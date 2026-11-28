@@ -683,9 +683,9 @@ button, input, select { font: inherit; color: inherit; }
       <div class="sub">Available to Stream</div>
     </div>
     <div class="cell">
-      <div class="label">Playback Support</div>
-      <div class="big" style="color:var(--primary)">Direct</div>
-      <div class="sub">Stremio · Nuvio · Jellyfin</div>
+      <div class="label">Active Users</div>
+      <div class="big" id="stat-users" style="color:var(--primary)">-</div>
+      <div class="sub">Community Streamers</div>
     </div>
   </section>
 
@@ -809,6 +809,9 @@ async function fetchLibrary(append = false) {
       document.getElementById('stat-movies').textContent = (data.stats.movies || 0).toLocaleString();
       document.getElementById('stat-shows').textContent = (data.stats.shows || 0).toLocaleString();
       document.getElementById('stat-total').textContent = (data.stats.total_titles || 0).toLocaleString();
+      if (data.stats.active_users) {
+        document.getElementById('stat-users').textContent = Number(data.stats.active_users).toLocaleString();
+      }
     }
 
     loadingBox.style.display = 'none';

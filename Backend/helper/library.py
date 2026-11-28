@@ -235,10 +235,76 @@ async def get_library_stats() -> dict:
         except Exception as e:
             LOGGER.debug(f"[Library] Error counting docs in {k}: {e}")
 
+    # Count active tokens / users safely matching admin/access logic
+    active_users = 0
+    try:
+        from datetime import datetime
+        now_dt = datetime.utcnow()
+        sub_on = bool(SettingsManager.current().subscription)
+        tokens = await db.get_all_api_tokens()
+
+        # Map subscribers for rapid subscription checking
+        subscriber_map = {}
+        if sub_on:
+            try:
+                for u in await db.get_all_subscribers():
+                    subscriber_map[str(u.get("_id"))] = u
+            except Exception:
+                pass
+
+        seen_user_ids = set()
+
+        for t in tokens:
+            token_user_id = t.get("user_id")
+            uid_str = str(token_user_id) if token_user_id is not None else None
+            user = None
+            if uid_str:
+                seen_user_ids.add(uid_str)
+                user = subscriber_map.get(uid_str)
+                if not user:
+                    try:
+                        user = await db.get_user(int(token_user_id))
+                    except Exception:
+                        pass
+
+            is_admin = bool(t.get("is_admin")) or (uid_str and db._is_owner(int(token_user_id)))
+            lifetime = bool(t.get("subscription_exempt"))
+            token_expiry = t.get("expires_at")
+            user_sub_expiry = user.get("subscription_expiry") if user else None
+            sub_status = user.get("subscription_status") if user else None
+
+            if not sub_on:
+                is_expired = False
+            elif is_admin or lifetime:
+                is_expired = False
+            elif token_expiry is not None:
+                # token_expiry can be datetime or timestamp
+                exp_dt = datetime.fromtimestamp(token_expiry) if isinstance(token_expiry, (int, float)) else token_expiry
+                is_expired = exp_dt < now_dt
+            elif user and sub_status == "active" and user_sub_expiry:
+                exp_dt = datetime.fromtimestamp(user_sub_expiry) if isinstance(user_sub_expiry, (int, float)) else user_sub_expiry
+                is_expired = exp_dt < now_dt
+            else:
+                is_expired = True
+
+            if not is_expired:
+                active_users += 1
+
+        # Also count subscribers who don't have a token doc yet but have active sub
+        if sub_on:
+            for uid_str, u in subscriber_map.items():
+                if uid_str not in seen_user_ids:
+                    if db.is_subscription_active(u, now_dt):
+                        active_users += 1
+
+    except Exception as e:
+        LOGGER.debug(f"[Library] Error counting active users: {e}")
+
     stats = {
         "movies": movies_count,
         "shows": shows_count,
         "total_titles": movies_count + shows_count,
+        "active_users": max(active_users, 1),
         "updated_at": int(now),
     }
 
